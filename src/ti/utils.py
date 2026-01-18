@@ -33,8 +33,15 @@ def configure_torch(runtime: dict, device: torch.device) -> None:
 
     if device.type == "cuda":
         allow_tf32 = bool(runtime.get("allow_tf32", True))
-        torch.backends.cuda.matmul.allow_tf32 = allow_tf32
-        torch.backends.cudnn.allow_tf32 = allow_tf32
+        if hasattr(torch.backends.cuda.matmul, "fp32_precision"):
+            torch.backends.cuda.matmul.fp32_precision = "tf32" if allow_tf32 else "ieee"
+        else:
+            torch.backends.cuda.matmul.allow_tf32 = allow_tf32
+
+        if hasattr(torch.backends.cudnn, "conv") and hasattr(torch.backends.cudnn.conv, "fp32_precision"):
+            torch.backends.cudnn.conv.fp32_precision = "tf32" if allow_tf32 else "ieee"
+        else:
+            torch.backends.cudnn.allow_tf32 = allow_tf32
 
         if hasattr(torch.backends.cuda.matmul, "allow_fp16_reduced_precision_reduction"):
             torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = bool(

@@ -18,6 +18,8 @@ def _auc_success(df: pd.DataFrame) -> float:
     steps = df["env_step"].values
     success = df["success"].values
     cum_success = np.cumsum(success) / np.arange(1, len(success) + 1)
+    if hasattr(np, "trapezoid"):
+        return float(np.trapezoid(cum_success, steps))
     return float(np.trapz(cum_success, steps))
 
 
