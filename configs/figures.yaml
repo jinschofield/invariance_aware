@@ -1,0 +1,19 @@
+figures:
+  rep_sweep:
+    generator: rep_sweep
+    title: Representation sweep
+    envs: [periodicity, slippery, teacup]
+    crtr_rep_list: [1, 2, 4, 8, 16, 32, 64]
+    inv_samples: 2048
+
+  elliptical_heatmaps:
+    generator: elliptical_heatmaps
+    title: Elliptical bonus heatmaps
+    envs: [periodicity, slippery, teacup]
+    crtr_rep_list: [1, 2, 4, 8, 16, 32, 64]
+
+  teacup_elliptical_only:
+    generator: teacup_elliptical_only
+    title: Teacup elliptical scalars
+    envs: [teacup]
+    crtr_rep_list: [1, 2, 4, 8, 16, 32, 64]

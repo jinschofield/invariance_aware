@@ -1,0 +1,49 @@
+methods:
+  train:
+    offline_num_envs: 256
+    offline_collect_steps: 40000
+    offline_train_steps: 20000
+    offline_batch_size: 256
+    print_train_every: 5000
+
+  probes:
+    train_steps: 1500
+    batch_size: 512
+    eval_samples: 5000
+    test_frac: 0.2
+
+  bonus_probe:
+    samples: 60000
+    test_frac: 0.2
+    steps: 1500
+    batch: 512
+    eval: 5000
+
+  elliptical:
+    lambda: 1.0
+    beta: 1.0
+    max_samples_for_A: 200000
+    nuis_samples: 16
+    action_avg: true
+
+  model:
+    z_dim: 8
+    hidden_dim: 64
+    lr: 0.0003
+    crtr_temp: 2.8284271247461903
+    crtr_rep_default: 2
+    k_cap: 10
+    geom_p: 0.01
+    biscuit:
+      tau_start: 1.0
+      tau_end: 5.0
+      interaction_reg_weight: 0.0005
+      beta_kl: 1.0
+    cbm:
+      n_neg: 64
+      eps_cmi: 0.02
+      lam1: 1.0e-6
+      lam2: 1.0e-6
+      lr: 0.0003
+
+  crtr_rep_list: [1, 2, 4, 8, 16, 32, 64]

@@ -1,0 +1,40 @@
+maze:
+  size: 12
+  obs_dim: 5
+  n_actions: 4
+  max_ep_steps: 60
+  goal: [10, 10]
+  periodic_P: 8
+  slippery_D: 3
+  teacup_P: 4
+
+envs:
+  periodicity:
+    name: Periodicity
+    ctor: PeriodicMaze
+    classes: 8
+    probe_mask: null
+
+  slippery:
+    name: Slippery
+    ctor: SlipperyDelayMaze
+    classes: 3
+    probe_mask: null
+
+  teacup:
+    name: Teacup Maze
+    ctor: TeacupMaze
+    classes: 4
+    probe_mask: special_only
+
+  teacup_drift:
+    name: Teacup Maze
+    ctor: TeacupMaze
+    classes: 4
+    probe_mask: special_only
+
+  teacup_reinst:
+    name: Teacup Maze
+    ctor: TeacupMaze
+    classes: 4
+    probe_mask: special_only
