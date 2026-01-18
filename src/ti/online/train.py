@@ -82,6 +82,8 @@ def run_online_training(cfg, env_id, method, seed, alpha, output_dir):
             "gamma": 0.99,
             "q_lr": 0.0005,
             "q_hidden": 128,
+            "double_dqn": True,
+            "n_step": 3,
             "eps_start": 1.0,
             "eps_end": 0.05,
             "eps_decay_steps": 100000,
@@ -220,6 +222,7 @@ def run_online_training(cfg, env_id, method, seed, alpha, output_dir):
         hidden_dim=online_cfg["q_hidden"],
         lr=online_cfg["q_lr"],
         device=device,
+        double=online_cfg.get("double_dqn", True),
     )
 
     bonus = EpisodicEllipticalBonus(
@@ -299,11 +302,12 @@ def run_online_training(cfg, env_id, method, seed, alpha, output_dir):
         obs = reset_obs
 
         if buffer.size >= online_cfg["batch_size"] and step % online_cfg["update_every"] == 0:
-            s, a, r, sp, d = buffer.sample_with_reward(online_cfg["batch_size"])
+            n_step = int(online_cfg.get("n_step", 1))
+            s, a, r, sp, d = buffer.sample_nstep(online_cfg["batch_size"], n_step, online_cfg["gamma"])
             with torch.no_grad():
                 z_sp = encode_fn(sp)
             z_s = encode_fn(s).detach()
-            last_q_loss = agent.update((z_s, a, r, z_sp, d), gamma=online_cfg["gamma"])
+            last_q_loss = agent.update((z_s, a, r, z_sp, d), gamma=online_cfg["gamma"], n_step=n_step)
 
         if buffer.size >= online_cfg["rep_batch_size"] and step % online_cfg["rep_update_every"] == 0:
             last_rep_metric = rep_update_fn(step)

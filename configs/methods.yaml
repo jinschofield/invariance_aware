@@ -60,6 +60,8 @@ methods:
     gamma: 0.99
     q_lr: 0.0005
     q_hidden: 128
+    double_dqn: true
+    n_step: 3
     eps_start: 1.0
     eps_end: 0.05
     eps_decay_steps: 100000
