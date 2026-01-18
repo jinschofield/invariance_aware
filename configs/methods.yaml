@@ -68,7 +68,3 @@ methods:
     alpha_list: [0.0, 0.1, 0.3, 1.0, 3.0]
     cbm_warmup_steps: 5000
     cbm_update_every: 50000
-    success_window: 100
-    early_stop_success: true
-    early_stop_patience: 200
-    early_stop_min_steps: 20000
