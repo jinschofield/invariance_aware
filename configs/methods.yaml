@@ -66,3 +66,5 @@ methods:
     bonus_lambda: 1.0
     bonus_beta: 1.0
     alpha_list: [0.0, 0.1, 0.3, 1.0, 3.0]
+    cbm_warmup_steps: 5000
+    cbm_update_every: 50000
