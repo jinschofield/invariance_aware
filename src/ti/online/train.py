@@ -61,7 +61,28 @@ def _update_rep(learner, buf, batch_size, device, use_amp, amp_dtype):
 def run_online_training(cfg, env_id, method, seed, alpha, output_dir):
     runtime = cfg["runtime"]
     methods_cfg = cfg["methods"]
-    online_cfg = methods_cfg["online"]
+    online_cfg = dict(
+        {
+            "num_envs": 16,
+            "total_steps": 200000,
+            "buffer_size": 3200000,
+            "batch_size": 256,
+            "rep_batch_size": 256,
+            "update_every": 4,
+            "rep_update_every": 2,
+            "target_update_every": 1000,
+            "gamma": 0.99,
+            "q_lr": 0.0005,
+            "q_hidden": 128,
+            "eps_start": 1.0,
+            "eps_end": 0.05,
+            "eps_decay_steps": 100000,
+            "bonus_lambda": 1.0,
+            "bonus_beta": 1.0,
+            "alpha_list": [0.0, 0.1, 0.3, 1.0, 3.0],
+        }
+    )
+    online_cfg.update(methods_cfg.get("online", {}))
     maze_cfg = build_maze_cfg(cfg)
 
     device = torch.device(runtime.get("device") or ("cuda" if torch.cuda.is_available() else "cpu"))
