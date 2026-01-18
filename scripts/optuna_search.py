@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import time
 
@@ -20,6 +21,25 @@ def _suggest_float(trial, name, bounds, log=False):
     return trial.suggest_float(name, low, high, log=log)
 
 
+def _make_sampler(optuna, opt_cfg, seed):
+    sampler_name = str(opt_cfg.get("sampler", "tpe")).lower()
+    n_startup = int(opt_cfg.get("n_startup_trials", 5))
+    if sampler_name == "random":
+        return optuna.samplers.RandomSampler(seed=seed)
+    return optuna.samplers.TPESampler(seed=seed, n_startup_trials=n_startup, multivariate=True)
+
+
+def _make_pruner(optuna, opt_cfg):
+    pruner_name = str(opt_cfg.get("pruner", "median")).lower()
+    n_startup = int(opt_cfg.get("pruner_startup_trials", 5))
+    n_warmup = int(opt_cfg.get("pruner_warmup_steps", 1))
+    if pruner_name == "none":
+        return optuna.pruners.NopPruner()
+    if pruner_name == "successive_halving":
+        return optuna.pruners.SuccessiveHalvingPruner(min_resource=1, reduction_factor=3)
+    return optuna.pruners.MedianPruner(n_startup_trials=n_startup, n_warmup_steps=n_warmup)
+
+
 def objective_factory(cfg, opt_cfg):
     runtime = cfg["runtime"]
     methods_cfg = cfg["methods"]
@@ -33,6 +53,8 @@ def objective_factory(cfg, opt_cfg):
     collect_steps = int(opt_cfg.get("collect_steps", methods_cfg["train"]["offline_collect_steps"]))
     num_envs = int(opt_cfg.get("num_envs", methods_cfg["train"]["offline_num_envs"]))
     batch_size = int(opt_cfg.get("batch_size", methods_cfg["train"]["offline_batch_size"]))
+    eval_every = int(opt_cfg.get("eval_every", train_steps))
+    inv_samples = int(opt_cfg.get("inv_samples", 2048))
 
     env_spec = get_env_spec(cfg, env_id)
     device = torch.device(runtime.get("device") or ("cuda" if torch.cuda.is_available() else "cpu"))
@@ -50,6 +72,16 @@ def objective_factory(cfg, opt_cfg):
             if runtime.get("cache_datasets", True):
                 save_buffer(cache_path, buf, epi)
         return buf, epi, env
+
+    def _metric_from_enc(enc, obs, y, obs_all, obs1, obs2):
+        if metric == "inv":
+            return float(invariance_metric_from_pairs(enc, obs1, obs2))
+        if metric in ("nuis_acc", "nuis_mi"):
+            acc, mi = run_linear_probe_any(enc, obs, y, num_classes, probe_cfg, seed=runtime["seed"], device=device)
+            return float(acc if metric == "nuis_acc" else mi)
+        if metric == "xy_mse":
+            return float(run_xy_regression_probe(enc, obs_all, probe_cfg, seed=runtime["seed"], device=device))
+        raise ValueError(f"Unknown metric: {metric}")
 
     def objective(trial):
         seed_everything(int(runtime.get("seed", 0)) + int(trial.number), deterministic=runtime.get("deterministic", True))
@@ -76,7 +108,7 @@ def objective_factory(cfg, opt_cfg):
             y = y_all
 
         num_classes = int(env_spec["classes"])
-        obs1, obs2 = env.sample_invariance_pairs(2048)
+        obs1, obs2 = env.sample_invariance_pairs(inv_samples)
 
         if method != "CRTR":
             raise ValueError("Optuna script currently supports CRTR only.")
@@ -95,28 +127,27 @@ def objective_factory(cfg, opt_cfg):
             lr=lr,
         ).to(device)
 
-        learner.train_steps(
-            buf,
-            epi,
-            train_steps,
-            batch_size,
-            log_every=methods_cfg["train"]["print_train_every"],
-            use_amp=runtime.get("use_amp", False),
-            amp_dtype=runtime.get("amp_dtype", "bf16"),
-        )
+        steps_done = 0
+        while steps_done < train_steps:
+            chunk = min(eval_every, train_steps - steps_done)
+            learner.train_steps(
+                buf,
+                epi,
+                chunk,
+                batch_size,
+                log_every=0,
+                use_amp=runtime.get("use_amp", False),
+                amp_dtype=runtime.get("amp_dtype", "bf16"),
+            )
+            steps_done += chunk
+            enc = lambda x, L=learner: L.rep_enc(x)
+            value = _metric_from_enc(enc, obs, y, obs_all, obs1, obs2)
+            trial.report(value, steps_done)
+            if trial.should_prune():
+                import optuna
 
-        enc = lambda x, L=learner: L.rep_enc(x)
-        acc, mi = run_linear_probe_any(enc, obs, y, num_classes, probe_cfg, seed=runtime["seed"], device=device)
-        inv = invariance_metric_from_pairs(enc, obs1, obs2)
-        xy_mse = run_xy_regression_probe(enc, obs_all, probe_cfg, seed=runtime["seed"], device=device)
-
-        metrics = {
-            "nuis_acc": acc,
-            "nuis_mi": mi,
-            "inv": inv,
-            "xy_mse": xy_mse,
-        }
-        return float(metrics[metric])
+                raise optuna.TrialPruned()
+        return float(value)
 
     return objective
 
@@ -146,18 +177,32 @@ def main():
     ensure_dir(os.path.dirname(storage_path))
     storage = f"sqlite:///{storage_path}"
 
+    sampler = _make_sampler(optuna, opt_cfg, seed=runtime.get("seed", 0))
+    pruner = _make_pruner(optuna, opt_cfg)
     study = optuna.create_study(
         study_name=study_name,
         direction=opt_cfg.get("direction", "minimize"),
         storage=storage,
         load_if_exists=True,
+        sampler=sampler,
+        pruner=pruner,
     )
 
     objective = objective_factory(cfg, opt_cfg)
     study.optimize(objective, n_trials=int(opt_cfg.get("n_trials", 20)), catch=(Exception,))
 
+    best = {
+        "value": float(study.best_value),
+        "params": study.best_params,
+        "trial": int(study.best_trial.number),
+        "study_name": study.study_name,
+    }
+    best_path = os.path.join(os.path.dirname(storage_path), f"{study_name}_best.json")
+    with open(best_path, "w", encoding="utf-8") as f:
+        json.dump(best, f, indent=2)
     print("Best trial:")
-    print(study.best_trial)
+    print(best)
+    print(f"Saved best params to: {best_path}")
 
 
 if __name__ == "__main__":

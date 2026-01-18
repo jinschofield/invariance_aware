@@ -1,11 +1,18 @@
 optuna:
   study_name: ti_optuna_slippery
   n_trials: 30
+  sampler: tpe
+  n_startup_trials: 5
+  pruner: median
+  pruner_startup_trials: 5
+  pruner_warmup_steps: 2
   direction: minimize
   metric: inv
   method: CRTR
   env_id: slippery
   train_steps: 5000
+  eval_every: 1000
+  inv_samples: 1024
   collect_steps: 20000
   num_envs: 128
   batch_size: 256
