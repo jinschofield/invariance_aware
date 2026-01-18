@@ -120,12 +120,16 @@ def main():
     out_dir = os.path.join(runtime.get("output_dir", "outputs"), "runs", "optuna_online")
     ensure_dir(out_dir)
     best_path = os.path.join(out_dir, "best_params.json")
+    best_study_path = os.path.join(out_dir, f"best_params_{study_name}.json")
     with open(best_path, "w", encoding="utf-8") as f:
+        json.dump(best, f, indent=2)
+    with open(best_study_path, "w", encoding="utf-8") as f:
         json.dump(best, f, indent=2)
 
     print("Best trial:")
     print(best)
     print(f"Saved best params to: {best_path}")
+    print(f"Saved best params to: {best_study_path}")
 
 
 if __name__ == "__main__":
