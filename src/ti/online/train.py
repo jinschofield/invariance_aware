@@ -90,6 +90,10 @@ def run_online_training(cfg, env_id, method, seed, alpha, output_dir):
             "alpha_list": [0.0, 0.1, 0.3, 1.0, 3.0],
             "cbm_warmup_steps": 5000,
             "cbm_update_every": 50000,
+            "success_window": 100,
+            "early_stop_success": True,
+            "early_stop_patience": 200,
+            "early_stop_min_steps": 20000,
         }
     )
     online_cfg.update(methods_cfg.get("online", {}))
@@ -238,6 +242,10 @@ def run_online_training(cfg, env_id, method, seed, alpha, output_dir):
 
     logs = []
     success_window = deque(maxlen=int(online_cfg.get("success_window", 100)))
+    success_streak = 0
+    early_stop_success = bool(online_cfg.get("early_stop_success", False))
+    early_stop_patience = int(online_cfg.get("early_stop_patience", 0))
+    early_stop_min_steps = int(online_cfg.get("early_stop_min_steps", 0))
     heatmap = torch.zeros((maze_cfg["maze_size"], maze_cfg["maze_size"]), device=device)
     ep_extr = torch.zeros((online_cfg["num_envs"],), device=device)
     ep_intr = torch.zeros((online_cfg["num_envs"],), device=device)
@@ -292,6 +300,10 @@ def run_online_training(cfg, env_id, method, seed, alpha, output_dir):
                     )
                 )
                 success_window.append(success_flag)
+                if success_flag == 1:
+                    success_streak += 1
+                else:
+                    success_streak = 0
             ep_extr[done_ids] = 0.0
             ep_intr[done_ids] = 0.0
             bonus.reset(done_ids)
@@ -312,6 +324,14 @@ def run_online_training(cfg, env_id, method, seed, alpha, output_dir):
             agent.sync_target()
 
         epsilon = eps_end + (eps_start - eps_end) * max(0.0, 1.0 - step / eps_steps)
+
+        if early_stop_success and success_streak >= early_stop_patience and step >= early_stop_min_steps:
+            print(
+                f"[Online] Early stopping at step {step}: "
+                f"{success_streak} consecutive successes (min_steps={early_stop_min_steps}).",
+                flush=True,
+            )
+            break
 
         if log_every and (step == 1 or step % log_every == 0 or step == total_steps):
             elapsed = time.time() - start_time
