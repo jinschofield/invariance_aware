@@ -1,5 +1,5 @@
 optuna:
-  study_name: ti_online_optuna_periodicity_sac
+  study_name: ti_online_optuna_periodicity_sac_v2
   direction: maximize
   n_trials: 20
 
