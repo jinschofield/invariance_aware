@@ -35,7 +35,7 @@ def run(cfg, fig_id, fig_spec):
     _plot_layout(axes[1], layout, maze_cfg["goal"], "Slippery")
     _plot_layout(axes[2], plate, maze_cfg["goal"], "Teacup Maze")
 
-    # Teacup cups
+                 
     centers = np.array([[3, 3], [3, 8], [8, 3], [8, 8], [6, 6]])
     for cx, cy in centers:
         circle = plt.Circle((cy, cx), radius=1.5, edgecolor="cyan", facecolor="none", lw=1.0)

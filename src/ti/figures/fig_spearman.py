@@ -53,7 +53,7 @@ def run(cfg, fig_id, fig_spec):
         rows.append({"env": env, "method": method, "seed": seed, "auc": auc})
 
     if not rows:
-        # Attempt a minimal run with default methods if nothing exists
+                                                                      
         for method in ["CRTR", "ICM", "RND", "IDM", "BISCUIT", "CBM"]:
             run_online_training(cfg, "periodicity", method, runtime["seed"], 1.0, table_dir)
         for fname in os.listdir(table_dir):

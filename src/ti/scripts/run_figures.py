@@ -19,9 +19,9 @@ def start_background_zipper(source_dir, zip_path, interval_minutes=15):
         while True:
             time.sleep(interval_minutes * 60)
             try:
-                # Zip strictly the contents of source_dir
+                                                         
                 print(f"[Backup] Zipping {source_dir} -> {zip_path} ...", flush=True)
-                # -r: recursive, -q: quiet, -FS: file sync (updates changed files)
+                                                                                  
                 subprocess.run(
                     ["zip", "-r", "-q", "-FS", zip_path, "."],
                     cwd=source_dir,
@@ -62,11 +62,11 @@ def run_from_config(config_path, figure_id=None, seed_override=None):
     ensure_dir(runtime["log_dir"])
     ensure_dir(runtime["ckpt_dir"])
 
-    # Start auto-zipper
+                       
     if runtime.get("auto_zip", True):
-        # Save zip one level above outputs to avoid recursion loop if running inside
-        # But here we zip 'outputs' folder contents.
-        # Let's save results_latest.zip in the parent of output_dir usually project root
+                                                                                    
+                                                    
+                                                                                        
         project_root = os.path.dirname(os.path.abspath(output_dir))
         zip_path = os.path.join(project_root, "results_latest.zip")
         interval = runtime.get("auto_zip_interval", 15)
