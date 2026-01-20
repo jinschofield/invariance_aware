@@ -166,8 +166,10 @@ def run_online_training(
 
     use_amp, amp_dtype, scaler = get_amp_settings(runtime, device)
 
-    rep_dim = z_dim
-    encode_fn = None
+    policy_dim = obs_dim
+    policy_enc = lambda x: x
+    bonus_dim = obs_dim
+    bonus_enc = None
     rep_update_fn = None
 
     if method in ["CRTR", "IDM", "ICM", "RND"]:
@@ -186,7 +188,8 @@ def run_online_training(
         ).to(device)
         if runtime.get("compile", False):
             learner = maybe_compile(learner, runtime)
-        encode_fn = lambda x, L=learner: L.rep_enc(x)
+        bonus_dim = z_dim
+        bonus_enc = lambda x, L=learner: L.rep_enc(x)
         rep_update_fn = lambda _step: _update_rep(
             learner, buffer, online_cfg["rep_batch_size"], device, use_amp, amp_dtype
         )
@@ -206,7 +209,8 @@ def run_online_training(
         ).to(device)
         if runtime.get("compile", False):
             model = maybe_compile(model, runtime)
-        encode_fn = lambda x, M=model: M.encode_mean(x)
+        bonus_dim = z_dim
+        bonus_enc = lambda x, M=model: M.encode_mean(x)
         biscuit_step = {"step": 0}
 
         def rep_update_fn(_step):
@@ -228,7 +232,9 @@ def run_online_training(
         keep_mask = torch.ones((obs_dim,), device=device)
         cbm_last_update = {"step": -1}
 
-        def encode_fn(x, mask=keep_mask):
+        bonus_dim = obs_dim
+
+        def bonus_enc(x, mask=keep_mask):
             return x * mask
 
         def rep_update_fn(step):
@@ -266,13 +272,11 @@ def run_online_training(
             cbm_last_update["step"] = int(step)
             return float(keep_state.sum().item())
 
-        rep_dim = obs_dim
-
     else:
         raise ValueError(f"Unsupported online method: {method}")
 
     agent = DiscreteSACAgent(
-        input_dim=rep_dim,
+        input_dim=policy_dim,
         n_actions=maze_cfg["n_actions"],
         hidden_dim=online_cfg["q_hidden"],
         hidden_layers=int(online_cfg.get("q_layers", 2)),
@@ -289,7 +293,7 @@ def run_online_training(
     )
 
     bonus = EpisodicEllipticalBonus(
-        z_dim=rep_dim,
+        z_dim=bonus_dim,
         n_actions=maze_cfg["n_actions"],
         beta=online_cfg["bonus_beta"],
         lam=online_cfg["bonus_lambda"],
@@ -343,9 +347,10 @@ def run_online_training(
     start_time = time.time()
     for step in range(1, total_steps + 1):
         with torch.no_grad():
-            z = encode_fn(obs)
-        actions = agent.act(z, epsilon)
-        bonus_vals = bonus.compute_and_update(z.detach(), actions)
+            policy_obs = policy_enc(obs)
+            bonus_z = bonus_enc(obs).detach() if bonus_enc is not None else obs
+        actions = agent.act(policy_obs, epsilon)
+        bonus_vals = bonus.compute_and_update(bonus_z, actions)
         if bonus_norm:
             batch_mean = bonus_vals.mean()
             batch_var = bonus_vals.var(unbiased=False)
@@ -397,8 +402,8 @@ def run_online_training(
                 online_cfg["batch_size"], n_step, online_cfg["gamma"]
             )
             with torch.no_grad():
-                z_sp = encode_fn(sp)
-            z_s = encode_fn(s).detach()
+                z_sp = policy_enc(sp)
+            z_s = policy_enc(s).detach()
             last_q_loss, last_pi_loss, last_ent_alpha, _ = agent.update(
                 (z_s, a, r, z_sp, d), gamma=online_cfg["gamma"], n_step=n_step_used
             )
