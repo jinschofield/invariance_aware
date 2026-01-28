@@ -27,7 +27,7 @@ from periodicity_study.metrics import (
     pairwise_ttests,
     rep_invariance_by_position,
 )
-from periodicity_study.plotting import plot_bar, plot_heatmap, plot_heatmap_diff
+from periodicity_study.plotting import plot_bar, plot_heatmap, plot_heatmap_diff, plot_timeseries
 from periodicity_study.ppo import train_ppo
 from periodicity_study.representations import (
     CoordOnlyRep,
@@ -313,6 +313,19 @@ def main():
             writer.writerows(logs)
         _save_timeseries(os.path.join(log_dir, f"metrics_timeseries_{name}.csv"), metrics_log)
 
+        if name == "crtr_learned":
+            plot_timeseries(
+                metrics_log,
+                title="CRTR fixed (offline) metrics over training",
+                out_path=os.path.join(fig_dir, "timeseries_crtr_fixed.png"),
+                metrics={
+                    "rep_invariance_mean": "Rep invariance (mean ||z1 - z2||)",
+                    "bonus_within_std_mean": "Bonus within-state std",
+                    "bonus_between_std": "Bonus between-state std",
+                    "action_kl_mean": "Action KL mean",
+                },
+            )
+
         action_kl[name] = action_dist_kl_by_position(policy, rep, cfg, device)
 
     action_kl_p = pairwise_ttests(action_kl)
@@ -360,6 +373,18 @@ def main():
         writer.writeheader()
         writer.writerows(online_logs)
     _save_timeseries(os.path.join(log_dir, "metrics_timeseries_crtr_online_joint.csv"), metrics_log)
+
+    plot_timeseries(
+        metrics_log,
+        title="CRTR online (joint) metrics over training",
+        out_path=os.path.join(fig_dir, "timeseries_crtr_online.png"),
+        metrics={
+            "rep_invariance_mean": "Rep invariance (mean ||z1 - z2||)",
+            "bonus_within_std_mean": "Bonus within-state std",
+            "bonus_between_std": "Bonus between-state std",
+            "action_kl_mean": "Action KL mean",
+        },
+    )
 
     # Final metrics including online joint representation
     rep_metrics_all = dict(rep_metrics)

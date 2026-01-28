@@ -90,3 +90,38 @@ def plot_heatmap_diff(
     fig.tight_layout()
     fig.savefig(out_path)
     plt.close(fig)
+
+
+def plot_timeseries(
+    rows: Iterable[Dict[str, float]],
+    title: str,
+    out_path: str,
+    metrics: Dict[str, str],
+    x_key: str = "env_steps",
+):
+    rows = list(rows)
+    if not rows:
+        return
+    x = [float(row.get(x_key, row.get("update", 0))) for row in rows]
+    n = len(metrics)
+    ncols = 2
+    nrows = max(1, int(np.ceil(n / ncols)))
+
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(8, 3 * nrows), sharex=True)
+    axes = np.atleast_1d(axes).reshape(-1)
+
+    for ax, (key, label) in zip(axes, metrics.items()):
+        y = [float(row.get(key, float("nan"))) for row in rows]
+        ax.plot(x, y, marker="o", markersize=3)
+        ax.set_title(label)
+        ax.set_xlabel(x_key)
+        ax.grid(alpha=0.3)
+
+    # Hide any unused axes
+    for ax in axes[n:]:
+        ax.axis("off")
+
+    fig.suptitle(title)
+    fig.tight_layout()
+    fig.savefig(out_path)
+    plt.close(fig)

@@ -2,7 +2,7 @@ from typing import Dict, Tuple
 
 import torch
 
-from ti.metrics.elliptical import build_precision_A_from_buffer, compute_heat_and_sensitivity
+from ti.metrics.elliptical import build_precision_A_from_buffer, elliptical_bonus, feat_from_enc
 
 from periodicity_study.common import build_obs_from_pos_phase, free_positions, maze_cfg_from_config
 
@@ -66,26 +66,18 @@ def _pearsonr(a: torch.Tensor, b: torch.Tensor) -> Tuple[float, float]:
 def rep_invariance_by_position(rep, cfg, device: torch.device) -> torch.Tensor:
     maze_cfg = maze_cfg_from_config(cfg)
     free = free_positions(maze_cfg["maze_size"], device)
-    n_pos = min(int(cfg.rep_positions), int(free.shape[0]))
-    idx = torch.randperm(free.shape[0], device=device)[:n_pos]
-    pos = free[idx]
+    P = int(maze_cfg["periodic_P"])
 
-    K = int(cfg.rep_pairs_per_pos)
-    p1 = torch.randint(0, maze_cfg["periodic_P"], (n_pos, K), device=device)
-    p2 = torch.randint(0, maze_cfg["periodic_P"], (n_pos, K), device=device)
+    # Evaluate invariance across all free positions and all phase pairs.
+    pos_rep = free.repeat_interleave(P, dim=0)
+    phases = torch.arange(P, device=device).repeat(free.shape[0])
+    obs = build_obs_from_pos_phase(pos_rep, phases, maze_cfg["maze_size"], P)
 
-    pos_rep = pos[:, None, :].expand(n_pos, K, 2).reshape(-1, 2)
-    obs1 = build_obs_from_pos_phase(
-        pos_rep, p1.reshape(-1), maze_cfg["maze_size"], maze_cfg["periodic_P"]
-    )
-    obs2 = build_obs_from_pos_phase(
-        pos_rep, p2.reshape(-1), maze_cfg["maze_size"], maze_cfg["periodic_P"]
-    )
-
-    z1 = rep.encode(obs1)
-    z2 = rep.encode(obs2)
-    d = torch.norm(z1 - z2, dim=1)
-    return d.reshape(n_pos, K).mean(dim=1)
+    z = rep.encode(obs).reshape(free.shape[0], P, -1)
+    d = torch.cdist(z, z, p=2)
+    mask = ~torch.eye(P, device=device, dtype=torch.bool)
+    d_off = d[:, mask].reshape(free.shape[0], -1)
+    return d_off.mean(dim=1)
 
 
 def build_bonus_heatmaps(rep, buf, cfg, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -100,14 +92,40 @@ def build_bonus_heatmaps(rep, buf, cfg, device: torch.device) -> Tuple[torch.Ten
         device=device,
     )
     Ainv = torch.linalg.inv(A)
-    heat_cfg = {
-        "action_avg": bool(cfg.bonus_action_avg),
-        "nuis_samples": int(cfg.bonus_nuis_samples),
-        "beta": float(cfg.bonus_beta),
-    }
-    heat_mean, heat_std = compute_heat_and_sensitivity(
-        "PeriodicMaze", enc_fn, Ainv, maze_cfg, heat_cfg, device
+
+    # Compute bonus across all free positions and all nuisance phases.
+    free = free_positions(maze_cfg["maze_size"], device)
+    P = int(maze_cfg["periodic_P"])
+    actions = (
+        torch.arange(maze_cfg["n_actions"], device=device)
+        if cfg.bonus_action_avg
+        else torch.zeros((1,), device=device, dtype=torch.long)
     )
+
+    pos_rep = free.repeat_interleave(P, dim=0)
+    phases = torch.arange(P, device=device).repeat(free.shape[0])
+    obs = build_obs_from_pos_phase(pos_rep, phases, maze_cfg["maze_size"], P)
+
+    obs_rep = obs[:, None, :].expand(pos_rep.shape[0], actions.numel(), maze_cfg["obs_dim"]).reshape(
+        -1, maze_cfg["obs_dim"]
+    )
+    a_rep = actions[None, :].expand(pos_rep.shape[0], actions.numel()).reshape(-1)
+    phi = feat_from_enc(enc_fn, obs_rep, a_rep, maze_cfg["n_actions"])
+    b = elliptical_bonus(phi, Ainv, beta=float(cfg.bonus_beta))
+    b = b.reshape(pos_rep.shape[0], actions.numel()).mean(dim=1)
+
+    b_fp = b.reshape(free.shape[0], P)
+    mean = b_fp.mean(dim=1)
+    std = b_fp.std(dim=1, unbiased=False)
+
+    heat_mean = torch.full(
+        (maze_cfg["maze_size"], maze_cfg["maze_size"]), float("nan"), device=device
+    )
+    heat_std = torch.full(
+        (maze_cfg["maze_size"], maze_cfg["maze_size"]), float("nan"), device=device
+    )
+    heat_mean[free[:, 0], free[:, 1]] = mean
+    heat_std[free[:, 0], free[:, 1]] = std
     return heat_mean, heat_std
 
 
