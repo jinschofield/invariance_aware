@@ -98,6 +98,30 @@ class OnlineCRTRRep(BaseRepresentation):
         return last_loss
 
 
+class OnlineIDMRep(BaseRepresentation):
+    def __init__(self, learner: OfflineRepLearner, dim: int, device: torch.device):
+        super().__init__(name="idm_online_joint", dim=int(dim))
+        self.learner = learner
+        self.device = device
+
+    def encode(self, obs: torch.Tensor) -> torch.Tensor:
+        with torch.no_grad():
+            return self.learner.rep_enc(obs)
+
+    def update(self, buf, batch_size: int, steps: int = 1) -> float:
+        if buf.size < batch_size:
+            return float("nan")
+        self.learner.train()
+        last_loss = float("nan")
+        for _ in range(int(steps)):
+            loss = self.learner.loss(buf, None, batch_size)
+            self.learner.opt.zero_grad(set_to_none=True)
+            loss.backward()
+            self.learner.opt.step()
+            last_loss = float(loss.item())
+        return last_loss
+
+
 def train_or_load_crtr(
     cfg,
     device: torch.device,
@@ -255,3 +279,20 @@ def init_online_crtr(cfg, device: torch.device) -> OnlineCRTRRep:
         lr=cfg.lr,
     ).to(device)
     return OnlineCRTRRep(learner, dim=cfg.z_dim, device=device)
+
+
+def init_online_idm(cfg, device: torch.device) -> OnlineIDMRep:
+    learner = OfflineRepLearner(
+        "IDM",
+        obs_dim=cfg.obs_dim,
+        z_dim=cfg.z_dim,
+        hidden_dim=cfg.hidden_dim,
+        n_actions=cfg.n_actions,
+        crtr_temp=cfg.crtr_temp,
+        crtr_rep=cfg.crtr_rep_factor,
+        k_cap=cfg.k_cap,
+        geom_p=cfg.geom_p,
+        device=device,
+        lr=cfg.lr,
+    ).to(device)
+    return OnlineIDMRep(learner, dim=cfg.z_dim, device=device)

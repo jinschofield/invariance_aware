@@ -14,6 +14,7 @@ Representations evaluated:
 - CRTR learned representation (offline-trained).
 - IDM learned representation (offline-trained).
 - CRTR learned representation (online joint training with PPO + bonus).
+- IDM learned representation (online joint training with PPO + bonus).
 
 ## Quick start
 

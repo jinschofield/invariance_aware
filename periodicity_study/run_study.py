@@ -40,6 +40,7 @@ from periodicity_study.representations import (
     CoordOnlyRep,
     CoordPhaseRep,
     init_online_crtr,
+    init_online_idm,
     train_or_load_crtr,
     train_or_load_idm,
 )
@@ -343,6 +344,13 @@ def main():
                 out_path=os.path.join(fig_dir, "timeseries_crtr_fixed.png"),
                 metrics=metrics_to_plot,
             )
+        elif name == "idm_learned":
+            plot_timeseries(
+                metrics_log,
+                title="IDM (offline) PPO metrics over training",
+                out_path=os.path.join(fig_dir, "timeseries_idm.png"),
+                metrics=metrics_to_plot,
+            )
         elif name == "coord_only":
             plot_timeseries(
                 metrics_log,
@@ -379,7 +387,7 @@ def main():
     _save_metric_values(os.path.join(table_dir, "ppo_action_kl_values.csv"), action_kl)
     _save_kv(os.path.join(table_dir, "ppo_action_kl_pvalues.csv"), action_kl_p)
 
-    print("Stage 4: Online joint CRTR representation + bonus + PPO")
+    print("Stage 4: Online joint representations + bonus + PPO")
     online_rep = init_online_crtr(cfg, device)
     rep_buf_size = int(cfg.online_rep_buffer_size)
     if rep_buf_size <= 0:
@@ -415,13 +423,6 @@ def main():
     _save_timeseries(os.path.join(log_dir, "metrics_timeseries_crtr_online_joint.csv"), metrics_log)
 
     coverage_series["crtr_online_joint"] = metrics_log
-    plot_multi_timeseries(
-        coverage_series,
-        title="PPO coverage over time (incl. online CRTR)",
-        out_path=os.path.join(fig_dir, "ppo_coverage_over_time_with_online.png"),
-        y_key="coverage_fraction",
-        y_label="Coverage fraction",
-    )
 
     plot_timeseries(
         metrics_log,
@@ -435,9 +436,62 @@ def main():
         },
     )
 
+    online_idm = init_online_idm(cfg, device)
+    idm_buf = OnlineReplayBuffer(cfg.obs_dim, rep_buf_size, cfg.ppo_num_envs, device)
+
+    def online_idm_eval_cb(update, env_steps, model, rep=online_idm, eval_buf=idm_buf):
+        metrics = _eval_levels(rep, model, cfg, device, eval_buf)
+        metrics.update({"update": int(update), "env_steps": int(env_steps)})
+        return metrics
+
+    idm_policy, idm_logs, idm_metrics_log = train_ppo(
+        online_idm,
+        cfg,
+        device,
+        rep_updater=online_idm.update,
+        rep_buffer=idm_buf,
+        rep_update_every=cfg.online_rep_update_every,
+        rep_update_steps=cfg.online_rep_update_steps,
+        rep_batch_size=cfg.online_rep_batch_size,
+        rep_warmup_steps=cfg.online_rep_warmup_steps,
+        eval_callback=online_idm_eval_cb,
+        eval_every_updates=cfg.online_eval_every_updates,
+        eval_buffer=idm_buf,
+    )
+    policies["idm_online_joint"] = idm_policy
+    torch.save(idm_policy.state_dict(), os.path.join(model_dir, "ppo_idm_online_joint.pt"))
+
+    with open(os.path.join(log_dir, "ppo_logs_idm_online_joint.csv"), "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=idm_logs[0].keys())
+        writer.writeheader()
+        writer.writerows(idm_logs)
+    _save_timeseries(os.path.join(log_dir, "metrics_timeseries_idm_online_joint.csv"), idm_metrics_log)
+
+    coverage_series["idm_online_joint"] = idm_metrics_log
+    plot_multi_timeseries(
+        coverage_series,
+        title="PPO coverage over time (incl. online CRTR/IDM)",
+        out_path=os.path.join(fig_dir, "ppo_coverage_over_time_with_online.png"),
+        y_key="coverage_fraction",
+        y_label="Coverage fraction",
+    )
+
+    plot_timeseries(
+        idm_metrics_log,
+        title="IDM online (joint) metrics over training",
+        out_path=os.path.join(fig_dir, "timeseries_idm_online.png"),
+        metrics={
+            "rep_invariance_mean": "Rep invariance (mean ||z1 - z2||)",
+            "bonus_within_std_mean": "Bonus within-state std",
+            "bonus_between_std": "Bonus between-state std",
+            "action_kl_mean": "Action KL mean",
+        },
+    )
+
     # Final metrics including online joint representation
     rep_metrics_all = dict(rep_metrics)
     rep_metrics_all["crtr_online_joint"] = rep_invariance_by_position(online_rep, cfg, device)
+    rep_metrics_all["idm_online_joint"] = rep_invariance_by_position(online_idm, cfg, device)
     rep_p_all = pairwise_ttests(rep_metrics_all)
     plot_bar(
         rep_metrics_all,
@@ -462,6 +516,17 @@ def main():
         title="Elliptical bonus (nuisance std) - crtr_online_joint",
         out_path=os.path.join(fig_dir, "heat_bonus_std_crtr_online_joint.png"),
     )
+    h_mean_idm, h_std_idm = build_bonus_heatmaps(online_idm, buf, cfg, device)
+    plot_heatmap(
+        h_mean_idm,
+        title="Elliptical bonus (mean) - idm_online_joint",
+        out_path=os.path.join(fig_dir, "heat_bonus_mean_idm_online_joint.png"),
+    )
+    plot_heatmap(
+        h_std_idm,
+        title="Elliptical bonus (nuisance std) - idm_online_joint",
+        out_path=os.path.join(fig_dir, "heat_bonus_std_idm_online_joint.png"),
+    )
 
     bonus_mean_vals_all = dict(bonus_mean_vals)
     bonus_std_vals_all = dict(bonus_std_vals)
@@ -471,6 +536,11 @@ def main():
     bonus_std_vals_all["crtr_online_joint"] = h_std_online[mask_online]
     between_std_online = h_mean_online[mask_online].std(unbiased=False)
     bonus_ratio_vals_all["crtr_online_joint"] = h_std_online[mask_online] / (between_std_online + 1e-8)
+    mask_idm = torch.isfinite(h_mean_idm)
+    bonus_mean_vals_all["idm_online_joint"] = h_mean_idm[mask_idm]
+    bonus_std_vals_all["idm_online_joint"] = h_std_idm[mask_idm]
+    between_std_idm = h_mean_idm[mask_idm].std(unbiased=False)
+    bonus_ratio_vals_all["idm_online_joint"] = h_std_idm[mask_idm] / (between_std_idm + 1e-8)
     bonus_mean_p_all = pairwise_ttests(bonus_mean_vals_all)
     bonus_std_p_all = pairwise_ttests(bonus_std_vals_all)
     bonus_ratio_p_all = pairwise_ttests(bonus_ratio_vals_all)
@@ -511,6 +581,9 @@ def main():
     action_kl_all = dict(action_kl)
     action_kl_all["crtr_online_joint"] = action_dist_kl_by_position(
         online_policy, online_rep, cfg, device
+    )
+    action_kl_all["idm_online_joint"] = action_dist_kl_by_position(
+        idm_policy, online_idm, cfg, device
     )
     action_kl_p_all = pairwise_ttests(action_kl_all)
     plot_bar(
