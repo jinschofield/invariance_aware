@@ -1,0 +1,19 @@
+/home/js6726/invariance_aware/src/ti/figures/fig_end2end.py:12: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  payload = torch.load(path, map_location="cpu")
+../aten/src/ATen/native/cuda/TensorCompare.cu:110: _assert_async_cuda_kernel: block: [0,0,0], thread: [0,0,0] Assertion `probability tensor contains either `inf`, `nan` or element < 0` failed.
+Traceback (most recent call last):
+  File "/home/js6726/invariance_aware/scripts/run_figures.py", line 5, in <module>
+    main()
+  File "/home/js6726/invariance_aware/src/ti/scripts/run_figures.py", line 117, in main
+    run_from_config(args.config, figure_id=args.fig, seed_override=args.seed)
+  File "/home/js6726/invariance_aware/src/ti/scripts/run_figures.py", line 103, in run_from_config
+    generator(cfg, fid, spec)
+  File "/home/js6726/invariance_aware/src/ti/figures/fig_convergence.py", line 47, in run
+    run_online_training(cfg, env_id, method, runtime["seed"], alpha, table_dir)
+  File "/home/js6726/invariance_aware/src/ti/online/train.py", line 355, in run_online_training
+    last_bonus_mean = float(bonus_vals.mean().item())
+RuntimeError: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+

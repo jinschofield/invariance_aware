@@ -1,0 +1,2 @@
+[Online] slippery/CRTR seed=0 bonus_scale=0.0 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=n/a success=n/a ema=n/a cum=n/a auc=n/a 0.3 steps/s ETA 11678.3m

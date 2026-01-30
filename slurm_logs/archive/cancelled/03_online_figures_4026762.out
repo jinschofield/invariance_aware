@@ -1,0 +1,9 @@
+[Online] periodicity/CRTR seed=0 bonus_scale=1.0 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_metric=n/a success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 0.1 steps/s ETA 59907.6m
+[Online] step 10000/200000 eps=0.000 buffer=160000 q_loss=12.0465 pi_loss=-1.1298 ent_alpha=0.095 rep_metric=5.2428 success=0.060 (last 100) ema=0.172 cum=0.176 auc=1306.1 40.3 steps/s ETA 78.6m
+[Online] step 20000/200000 eps=0.000 buffer=320000 q_loss=13.7241 pi_loss=-1.3023 ent_alpha=0.032 rep_metric=5.2551 success=0.090 (last 100) ema=0.149 cum=0.144 auc=2917.2 25.0 steps/s ETA 120.2m
+[Online] step 30000/200000 eps=0.000 buffer=480000 q_loss=17.6438 pi_loss=-2.6161 ent_alpha=0.014 rep_metric=5.2504 success=0.020 (last 100) ema=0.012 cum=0.123 auc=4285.0 17.9 steps/s ETA 157.9m
+[Online] step 40000/200000 eps=0.000 buffer=640000 q_loss=11.4508 pi_loss=-3.0140 ent_alpha=0.007 rep_metric=5.2589 success=0.020 (last 100) ema=0.028 cum=0.099 auc=5381.6 14.1 steps/s ETA 189.7m
+[Online] step 50000/200000 eps=0.000 buffer=800000 q_loss=16.5519 pi_loss=-3.8023 ent_alpha=0.003 rep_metric=5.2537 success=0.030 (last 100) ema=0.003 cum=0.083 auc=6287.8 11.6 steps/s ETA 216.1m
+[Online] step 60000/200000 eps=0.000 buffer=960000 q_loss=15.6504 pi_loss=-4.6673 ent_alpha=0.001 rep_metric=5.2527 success=0.000 (last 100) ema=0.000 cum=0.071 auc=7053.5 9.8 steps/s ETA 237.1m
+[Online] step 70000/200000 eps=0.000 buffer=1120000 q_loss=27.8460 pi_loss=-3.8336 ent_alpha=0.001 rep_metric=5.2607 success=0.000 (last 100) ema=0.000 cum=0.061 auc=7709.7 8.6 steps/s ETA 252.7m

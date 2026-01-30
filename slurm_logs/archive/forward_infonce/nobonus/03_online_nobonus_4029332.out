@@ -1,0 +1,11 @@
+[Online] periodicity/CRTR seed=0 bonus_scale=0.0 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=1.4142 success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 5.9 steps/s ETA 566.2m
+[Online] step 10000/200000 eps=0.000 buffer=100000 q_loss=0.1451 pi_loss=-4.6107 ent_alpha=0.425 rep_loss=5.2433 bonus=0.3791 success=0.130 (last 100) ema=0.144 cum=0.122 auc=1393.8 44.7 steps/s ETA 70.9m
+[Online] step 20000/200000 eps=0.000 buffer=100000 q_loss=3.7777 pi_loss=-11.9540 ent_alpha=0.894 rep_loss=5.2452 bonus=0.5222 success=0.080 (last 100) ema=0.038 cum=0.104 auc=2530.5 39.1 steps/s ETA 76.8m
+[Online] step 30000/200000 eps=0.000 buffer=100000 q_loss=22.5323 pi_loss=-26.3998 ent_alpha=1.886 rep_loss=5.2386 bonus=0.4275 success=0.050 (last 100) ema=0.030 cum=0.093 auc=3508.3 37.6 steps/s ETA 75.3m
+[Online] step 40000/200000 eps=0.000 buffer=100000 q_loss=123.0333 pi_loss=-56.7755 ent_alpha=4.007 rep_loss=5.2426 bonus=0.5074 success=0.030 (last 100) ema=0.029 cum=0.089 auc=4421.0 37.0 steps/s ETA 72.0m
+[Online] step 50000/200000 eps=0.000 buffer=100000 q_loss=295.8801 pi_loss=-122.6169 ent_alpha=8.489 rep_loss=5.2451 bonus=0.4126 success=0.070 (last 100) ema=0.054 cum=0.088 auc=5303.2 36.7 steps/s ETA 68.1m
+[Online] step 60000/200000 eps=0.000 buffer=100000 q_loss=835.3040 pi_loss=-198.4104 ent_alpha=10.000 rep_loss=5.2483 bonus=0.5026 success=0.090 (last 100) ema=0.097 cum=0.086 auc=6175.7 36.4 steps/s ETA 64.1m
+[Online] step 70000/200000 eps=0.000 buffer=100000 q_loss=1267.3284 pi_loss=-242.1962 ent_alpha=10.000 rep_loss=5.2440 bonus=0.4392 success=0.030 (last 100) ema=0.021 cum=0.081 auc=7007.1 36.3 steps/s ETA 59.7m
+[Online] step 80000/200000 eps=0.000 buffer=100000 q_loss=4552.7852 pi_loss=-265.6224 ent_alpha=10.000 rep_loss=5.2372 bonus=0.5024 success=0.020 (last 100) ema=0.003 cum=0.077 auc=7800.8 36.2 steps/s ETA 55.2m
+[Online] step 90000/200000 eps=0.000 buffer=100000 q_loss=1746.2277 pi_loss=-281.2392 ent_alpha=10.000 rep_loss=5.2512 bonus=0.4296 success=0.010 (last 100) ema=0.006 cum=0.074 auc=8556.5 36.2 steps/s ETA 50.7m

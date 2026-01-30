@@ -10,6 +10,7 @@ if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
 import copy
+import numpy as np
 import torch
 
 from ti.data.buffer import build_episode_index_strided

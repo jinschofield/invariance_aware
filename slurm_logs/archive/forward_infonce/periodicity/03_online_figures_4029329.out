@@ -1,0 +1,264 @@
+[Online] periodicity/CRTR seed=0 bonus_scale=1.0 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=1.4142 success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 6.0 steps/s ETA 558.3m
+[Online] step 10000/200000 eps=0.000 buffer=100000 q_loss=12.9625 pi_loss=-0.9901 ent_alpha=0.098 rep_loss=5.2528 bonus=0.5432 success=0.270 (last 100) ema=0.125 cum=0.213 auc=1320.8 47.3 steps/s ETA 66.9m
+[Online] step 20000/200000 eps=0.000 buffer=100000 q_loss=10.5360 pi_loss=-2.9295 ent_alpha=0.032 rep_loss=5.2399 bonus=0.4785 success=0.010 (last 100) ema=0.002 cum=0.132 auc=3064.0 41.0 steps/s ETA 73.1m
+[Online] step 30000/200000 eps=0.000 buffer=100000 q_loss=12.7709 pi_loss=-4.2533 ent_alpha=0.014 rep_loss=5.2743 bonus=0.4557 success=0.000 (last 100) ema=0.000 cum=0.092 auc=4167.9 40.2 steps/s ETA 70.6m
+[Online] step 40000/200000 eps=0.000 buffer=100000 q_loss=9.8473 pi_loss=-5.4800 ent_alpha=0.007 rep_loss=5.2961 bonus=0.3386 success=0.010 (last 100) ema=0.002 cum=0.071 auc=4970.2 39.8 steps/s ETA 67.0m
+[Online] step 50000/200000 eps=0.000 buffer=100000 q_loss=13.4027 pi_loss=0.0251 ent_alpha=0.003 rep_loss=5.2574 bonus=0.5104 success=0.010 (last 100) ema=0.001 cum=0.060 auc=5617.9 39.5 steps/s ETA 63.3m
+[Online] step 60000/200000 eps=0.000 buffer=100000 q_loss=82.6136 pi_loss=-6.7042 ent_alpha=0.001 rep_loss=5.2145 bonus=0.3142 success=0.000 (last 100) ema=0.000 cum=0.050 auc=6167.2 39.3 steps/s ETA 59.4m
+[Online] step 70000/200000 eps=0.000 buffer=100000 q_loss=13.6686 pi_loss=-6.1010 ent_alpha=0.001 rep_loss=5.2294 bonus=0.4263 success=0.010 (last 100) ema=0.003 cum=0.045 auc=6646.7 39.2 steps/s ETA 55.3m
+[Online] step 80000/200000 eps=0.000 buffer=100000 q_loss=8.4796 pi_loss=-7.4304 ent_alpha=0.000 rep_loss=5.2311 bonus=0.5381 success=0.010 (last 100) ema=0.001 cum=0.041 auc=7078.5 39.1 steps/s ETA 51.2m
+[Online] step 90000/200000 eps=0.000 buffer=100000 q_loss=13.3295 pi_loss=-3.9120 ent_alpha=0.000 rep_loss=5.2222 bonus=0.3307 success=0.020 (last 100) ema=0.048 cum=0.038 auc=7470.5 39.0 steps/s ETA 47.0m
+[Online] step 100000/200000 eps=0.000 buffer=100000 q_loss=13.0745 pi_loss=3.6526 ent_alpha=0.000 rep_loss=5.2209 bonus=0.3829 success=0.000 (last 100) ema=0.000 cum=0.035 auc=7831.5 38.9 steps/s ETA 42.8m
+[Online] step 110000/200000 eps=0.000 buffer=100000 q_loss=18.5083 pi_loss=7.0091 ent_alpha=0.000 rep_loss=5.2329 bonus=0.3644 success=0.000 (last 100) ema=0.000 cum=0.033 auc=8168.0 38.9 steps/s ETA 38.6m
+[Online] step 120000/200000 eps=0.000 buffer=100000 q_loss=9.5528 pi_loss=3.6463 ent_alpha=0.000 rep_loss=5.2203 bonus=0.2867 success=0.010 (last 100) ema=0.004 cum=0.031 auc=8483.6 38.9 steps/s ETA 34.3m
+[Online] step 130000/200000 eps=0.000 buffer=100000 q_loss=9.6190 pi_loss=3.8322 ent_alpha=0.000 rep_loss=5.2202 bonus=0.4151 success=0.010 (last 100) ema=0.006 cum=0.029 auc=8781.7 38.8 steps/s ETA 30.1m
+[Online] step 140000/200000 eps=0.000 buffer=100000 q_loss=13.6022 pi_loss=-4.1813 ent_alpha=0.000 rep_loss=5.2130 bonus=0.2238 success=0.310 (last 100) ema=0.379 cum=0.031 auc=9068.0 38.8 steps/s ETA 25.8m
+[Online] step 150000/200000 eps=0.000 buffer=100000 q_loss=8.3408 pi_loss=-1.6672 ent_alpha=0.000 rep_loss=5.2068 bonus=0.3827 success=0.000 (last 100) ema=0.000 cum=0.050 auc=9490.4 38.3 steps/s ETA 21.8m
+[Online] step 160000/200000 eps=0.000 buffer=100000 q_loss=9.3389 pi_loss=-0.8014 ent_alpha=0.000 rep_loss=5.2090 bonus=0.3888 success=0.020 (last 100) ema=0.012 cum=0.048 auc=9980.2 38.2 steps/s ETA 17.4m
+[Online] step 170000/200000 eps=0.000 buffer=100000 q_loss=13.4640 pi_loss=-6.7897 ent_alpha=0.000 rep_loss=5.2091 bonus=0.3347 success=0.030 (last 100) ema=0.005 cum=0.046 auc=10449.4 38.2 steps/s ETA 13.1m
+[Online] step 180000/200000 eps=0.000 buffer=100000 q_loss=7.4619 pi_loss=-2.7813 ent_alpha=0.000 rep_loss=5.2168 bonus=0.4849 success=0.020 (last 100) ema=0.046 cum=0.044 auc=10900.4 38.2 steps/s ETA 8.7m
+[Online] step 190000/200000 eps=0.000 buffer=100000 q_loss=9.4608 pi_loss=-4.4020 ent_alpha=0.000 rep_loss=5.2241 bonus=0.3778 success=0.040 (last 100) ema=0.028 cum=0.042 auc=11333.2 38.3 steps/s ETA 4.4m
+[Online] step 200000/200000 eps=0.000 buffer=100000 q_loss=6.5290 pi_loss=2.3525 ent_alpha=0.000 rep_loss=5.2321 bonus=0.3898 success=0.010 (last 100) ema=0.006 cum=0.041 auc=11747.2 38.3 steps/s ETA 0.0m
+[Online] periodicity/ICM seed=0 bonus_scale=1.0 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=1.4142 success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 283.0 steps/s ETA 11.8m
+[Online] step 10000/200000 eps=0.000 buffer=100000 q_loss=13.3610 pi_loss=-1.3352 ent_alpha=0.084 rep_loss=0.8512 bonus=0.4986 success=0.030 (last 100) ema=0.014 cum=0.032 auc=524.6 159.0 steps/s ETA 19.9m
+[Online] step 20000/200000 eps=0.000 buffer=100000 q_loss=11.8755 pi_loss=-1.2078 ent_alpha=0.031 rep_loss=0.2305 bonus=0.6904 success=0.000 (last 100) ema=0.000 cum=0.018 auc=758.6 158.6 steps/s ETA 18.9m
+[Online] step 30000/200000 eps=0.000 buffer=100000 q_loss=14.6641 pi_loss=-2.1148 ent_alpha=0.014 rep_loss=0.1360 bonus=0.5462 success=0.000 (last 100) ema=0.000 cum=0.012 auc=902.4 158.5 steps/s ETA 17.9m
+[Online] step 40000/200000 eps=0.000 buffer=100000 q_loss=10.7460 pi_loss=-4.9251 ent_alpha=0.006 rep_loss=0.1118 bonus=0.5301 success=0.010 (last 100) ema=0.006 cum=0.009 auc=1005.7 158.5 steps/s ETA 16.8m
+[Online] step 50000/200000 eps=0.000 buffer=100000 q_loss=17.9588 pi_loss=-9.1427 ent_alpha=0.003 rep_loss=0.1296 bonus=0.7068 success=0.010 (last 100) ema=0.001 cum=0.034 auc=1188.6 158.2 steps/s ETA 15.8m
+[Online] step 60000/200000 eps=0.000 buffer=100000 q_loss=12.8606 pi_loss=-10.5605 ent_alpha=0.001 rep_loss=0.0319 bonus=0.7401 success=0.900 (last 100) ema=0.847 cum=0.165 auc=1834.1 157.9 steps/s ETA 14.8m
+[Online] step 70000/200000 eps=0.000 buffer=100000 q_loss=19.3306 pi_loss=-9.4867 ent_alpha=0.001 rep_loss=0.0805 bonus=0.5492 success=0.080 (last 100) ema=0.098 cum=0.215 auc=3934.9 157.8 steps/s ETA 13.7m
+[Online] step 80000/200000 eps=0.000 buffer=100000 q_loss=11.4744 pi_loss=-6.7888 ent_alpha=0.000 rep_loss=0.0192 bonus=0.7941 success=0.660 (last 100) ema=0.614 cum=0.238 auc=6170.5 157.6 steps/s ETA 12.7m
+[Online] step 90000/200000 eps=0.000 buffer=100000 q_loss=10.2554 pi_loss=-1.7208 ent_alpha=0.000 rep_loss=0.0405 bonus=0.7322 success=0.800 (last 100) ema=0.836 cum=0.299 auc=8870.1 157.4 steps/s ETA 11.6m
+[Online] step 100000/200000 eps=0.000 buffer=100000 q_loss=13.1669 pi_loss=0.0470 ent_alpha=0.000 rep_loss=0.0592 bonus=0.5158 success=0.460 (last 100) ema=0.452 cum=0.353 auc=12188.8 157.3 steps/s ETA 10.6m
+[Online] step 110000/200000 eps=0.000 buffer=100000 q_loss=11.7977 pi_loss=1.6892 ent_alpha=0.000 rep_loss=0.0838 bonus=0.6346 success=0.360 (last 100) ema=0.375 cum=0.364 auc=15783.0 157.2 steps/s ETA 9.5m
+[Online] step 120000/200000 eps=0.000 buffer=100000 q_loss=16.8549 pi_loss=2.9160 ent_alpha=0.000 rep_loss=0.0003 bonus=0.5783 success=0.750 (last 100) ema=0.706 cum=0.395 auc=19548.0 157.1 steps/s ETA 8.5m
+[Online] step 130000/200000 eps=0.000 buffer=100000 q_loss=6.8232 pi_loss=2.9204 ent_alpha=0.000 rep_loss=0.0244 bonus=0.7434 success=0.940 (last 100) ema=0.957 cum=0.445 auc=23742.7 156.9 steps/s ETA 7.4m
+[Online] step 140000/200000 eps=0.000 buffer=100000 q_loss=16.5113 pi_loss=0.7733 ent_alpha=0.000 rep_loss=0.0448 bonus=0.5809 success=0.510 (last 100) ema=0.471 cum=0.471 auc=28361.1 156.9 steps/s ETA 6.4m
+[Online] step 150000/200000 eps=0.000 buffer=100000 q_loss=10.3788 pi_loss=0.1461 ent_alpha=0.000 rep_loss=0.0853 bonus=0.4878 success=0.110 (last 100) ema=0.099 cum=0.462 auc=33059.8 157.1 steps/s ETA 5.3m
+[Online] step 160000/200000 eps=0.000 buffer=100000 q_loss=17.9375 pi_loss=1.4112 ent_alpha=0.000 rep_loss=0.0157 bonus=0.5337 success=0.010 (last 100) ema=0.013 cum=0.443 auc=37586.6 157.2 steps/s ETA 4.2m
+[Online] step 170000/200000 eps=0.000 buffer=100000 q_loss=13.1020 pi_loss=-8.1336 ent_alpha=0.000 rep_loss=0.0408 bonus=0.6120 success=0.000 (last 100) ema=0.000 cum=0.427 auc=41938.9 157.3 steps/s ETA 3.2m
+[Online] step 180000/200000 eps=0.000 buffer=100000 q_loss=19.4096 pi_loss=-7.3338 ent_alpha=0.000 rep_loss=0.0340 bonus=0.5921 success=0.000 (last 100) ema=0.000 cum=0.410 auc=46116.4 157.5 steps/s ETA 2.1m
+[Online] step 190000/200000 eps=0.000 buffer=100000 q_loss=13.7449 pi_loss=-8.6386 ent_alpha=0.000 rep_loss=0.0204 bonus=0.5525 success=0.010 (last 100) ema=0.013 cum=0.394 auc=50137.1 157.5 steps/s ETA 1.1m
+[Online] step 200000/200000 eps=0.000 buffer=100000 q_loss=11.8050 pi_loss=-6.4664 ent_alpha=0.000 rep_loss=0.0378 bonus=0.6374 success=0.010 (last 100) ema=0.001 cum=0.380 auc=54006.2 157.6 steps/s ETA 0.0m
+[Online] periodicity/RND seed=0 bonus_scale=1.0 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=1.4142 success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 280.6 steps/s ETA 11.9m
+[Online] step 10000/200000 eps=0.000 buffer=100000 q_loss=11.0047 pi_loss=-0.8450 ent_alpha=0.088 rep_loss=0.0000 bonus=0.4317 success=0.000 (last 100) ema=0.000 cum=0.091 auc=856.3 180.9 steps/s ETA 17.5m
+[Online] step 20000/200000 eps=0.000 buffer=100000 q_loss=11.9949 pi_loss=-0.8381 ent_alpha=0.030 rep_loss=0.0000 bonus=0.3808 success=0.030 (last 100) ema=0.014 cum=0.051 auc=1525.5 181.0 steps/s ETA 16.6m
+[Online] step 30000/200000 eps=0.000 buffer=100000 q_loss=8.1596 pi_loss=0.6061 ent_alpha=0.013 rep_loss=0.0000 bonus=0.3841 success=0.000 (last 100) ema=0.000 cum=0.038 auc=1962.4 181.1 steps/s ETA 15.6m
+[Online] step 40000/200000 eps=0.000 buffer=100000 q_loss=9.8858 pi_loss=-3.1340 ent_alpha=0.006 rep_loss=0.0000 bonus=0.3561 success=0.000 (last 100) ema=0.000 cum=0.043 auc=2402.7 181.1 steps/s ETA 14.7m
+[Online] step 50000/200000 eps=0.000 buffer=100000 q_loss=8.0992 pi_loss=-0.6087 ent_alpha=0.003 rep_loss=0.0000 bonus=0.5546 success=0.000 (last 100) ema=0.000 cum=0.036 auc=2798.4 181.2 steps/s ETA 13.8m
+[Online] step 60000/200000 eps=0.000 buffer=100000 q_loss=11.6316 pi_loss=-5.9975 ent_alpha=0.001 rep_loss=0.0000 bonus=0.3637 success=0.020 (last 100) ema=0.013 cum=0.043 auc=3215.3 181.2 steps/s ETA 12.9m
+[Online] step 70000/200000 eps=0.000 buffer=100000 q_loss=10.3285 pi_loss=-4.4063 ent_alpha=0.001 rep_loss=0.0000 bonus=0.3949 success=0.030 (last 100) ema=0.004 cum=0.039 auc=3623.6 181.2 steps/s ETA 12.0m
+[Online] step 80000/200000 eps=0.000 buffer=100000 q_loss=11.1293 pi_loss=-5.3626 ent_alpha=0.000 rep_loss=0.0000 bonus=0.4970 success=0.000 (last 100) ema=0.000 cum=0.035 auc=3995.5 181.2 steps/s ETA 11.0m
+[Online] step 90000/200000 eps=0.000 buffer=100000 q_loss=9.8900 pi_loss=-4.1091 ent_alpha=0.000 rep_loss=0.0000 bonus=0.3988 success=0.010 (last 100) ema=0.017 cum=0.033 auc=4336.9 181.1 steps/s ETA 10.1m
+[Online] step 100000/200000 eps=0.000 buffer=100000 q_loss=14.6714 pi_loss=-3.2327 ent_alpha=0.000 rep_loss=0.0000 bonus=0.4222 success=0.000 (last 100) ema=0.000 cum=0.031 auc=4654.8 181.1 steps/s ETA 9.2m
+[Online] step 110000/200000 eps=0.000 buffer=100000 q_loss=14.7565 pi_loss=-5.1558 ent_alpha=0.000 rep_loss=0.0000 bonus=0.5236 success=0.000 (last 100) ema=0.000 cum=0.029 auc=4955.8 181.1 steps/s ETA 8.3m
+[Online] step 120000/200000 eps=0.000 buffer=100000 q_loss=11.8208 pi_loss=-2.0276 ent_alpha=0.000 rep_loss=0.0000 bonus=0.3565 success=0.010 (last 100) ema=0.010 cum=0.028 auc=5241.0 181.1 steps/s ETA 7.4m
+[Online] step 130000/200000 eps=0.000 buffer=100000 q_loss=9.1045 pi_loss=-3.4592 ent_alpha=0.000 rep_loss=0.0000 bonus=0.4983 success=0.010 (last 100) ema=0.002 cum=0.027 auc=5513.4 181.1 steps/s ETA 6.4m
+[Online] step 140000/200000 eps=0.000 buffer=100000 q_loss=23.3678 pi_loss=-9.4377 ent_alpha=0.000 rep_loss=0.0000 bonus=0.3899 success=0.270 (last 100) ema=0.165 cum=0.037 auc=5804.2 181.1 steps/s ETA 5.5m
+[Online] step 150000/200000 eps=0.000 buffer=100000 q_loss=17.5750 pi_loss=-11.2230 ent_alpha=0.000 rep_loss=0.0000 bonus=0.4026 success=0.000 (last 100) ema=0.001 cum=0.041 auc=6211.6 181.1 steps/s ETA 4.6m
+[Online] step 160000/200000 eps=0.000 buffer=100000 q_loss=12.1444 pi_loss=-3.0923 ent_alpha=0.000 rep_loss=0.0000 bonus=0.4356 success=0.040 (last 100) ema=0.091 cum=0.040 auc=6611.7 181.1 steps/s ETA 3.7m
+[Online] step 170000/200000 eps=0.000 buffer=100000 q_loss=15.7280 pi_loss=0.3036 ent_alpha=0.000 rep_loss=0.0000 bonus=0.4015 success=0.010 (last 100) ema=0.001 cum=0.039 auc=7002.2 181.1 steps/s ETA 2.8m
+[Online] step 180000/200000 eps=0.000 buffer=100000 q_loss=16.0801 pi_loss=1.7058 ent_alpha=0.000 rep_loss=0.0000 bonus=0.3538 success=0.030 (last 100) ema=0.017 cum=0.038 auc=7383.1 181.1 steps/s ETA 1.8m
+[Online] step 190000/200000 eps=0.000 buffer=100000 q_loss=8.1392 pi_loss=4.9019 ent_alpha=0.000 rep_loss=0.0000 bonus=0.4408 success=0.010 (last 100) ema=0.001 cum=0.036 auc=7753.6 181.1 steps/s ETA 0.9m
+[Online] step 200000/200000 eps=0.000 buffer=100000 q_loss=13.6700 pi_loss=-1.4278 ent_alpha=0.000 rep_loss=0.0000 bonus=0.4343 success=0.020 (last 100) ema=0.004 cum=0.036 auc=8113.9 181.1 steps/s ETA 0.0m
+[Online] periodicity/IDM seed=0 bonus_scale=1.0 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=1.4142 success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 281.0 steps/s ETA 11.9m
+[Online] step 10000/200000 eps=0.000 buffer=100000 q_loss=13.3917 pi_loss=-1.1786 ent_alpha=0.086 rep_loss=0.8022 bonus=0.6056 success=0.030 (last 100) ema=0.020 cum=0.035 auc=737.4 168.1 steps/s ETA 18.8m
+[Online] step 20000/200000 eps=0.000 buffer=100000 q_loss=12.1236 pi_loss=-1.7512 ent_alpha=0.031 rep_loss=0.2818 bonus=0.6627 success=0.020 (last 100) ema=0.069 cum=0.023 auc=1007.0 167.9 steps/s ETA 17.9m
+[Online] step 30000/200000 eps=0.000 buffer=100000 q_loss=11.9877 pi_loss=-2.9712 ent_alpha=0.014 rep_loss=0.0979 bonus=0.6309 success=0.010 (last 100) ema=0.013 cum=0.017 auc=1200.7 167.9 steps/s ETA 16.9m
+[Online] step 40000/200000 eps=0.000 buffer=100000 q_loss=12.5011 pi_loss=-2.0919 ent_alpha=0.006 rep_loss=0.0770 bonus=0.7052 success=0.800 (last 100) ema=0.750 cum=0.043 auc=1473.9 167.8 steps/s ETA 15.9m
+[Online] step 50000/200000 eps=0.000 buffer=100000 q_loss=9.7469 pi_loss=-0.4024 ent_alpha=0.003 rep_loss=0.0239 bonus=0.6008 success=0.460 (last 100) ema=0.577 cum=0.145 auc=2668.2 167.5 steps/s ETA 14.9m
+[Online] step 60000/200000 eps=0.000 buffer=100000 q_loss=11.3194 pi_loss=-4.8088 ent_alpha=0.001 rep_loss=0.0758 bonus=0.5813 success=0.000 (last 100) ema=0.000 cum=0.130 auc=4077.2 167.6 steps/s ETA 13.9m
+[Online] step 70000/200000 eps=0.000 buffer=100000 q_loss=13.4968 pi_loss=-0.9074 ent_alpha=0.001 rep_loss=0.0577 bonus=0.5575 success=0.020 (last 100) ema=0.009 cum=0.114 auc=5293.7 167.6 steps/s ETA 12.9m
+[Online] step 80000/200000 eps=0.000 buffer=100000 q_loss=55.2949 pi_loss=-2.2463 ent_alpha=0.000 rep_loss=0.0023 bonus=0.4223 success=0.010 (last 100) ema=0.002 cum=0.102 auc=6370.9 167.7 steps/s ETA 11.9m
+[Online] step 90000/200000 eps=0.000 buffer=100000 q_loss=11.5286 pi_loss=-9.3028 ent_alpha=0.000 rep_loss=0.0536 bonus=0.5770 success=0.020 (last 100) ema=0.020 cum=0.093 auc=7344.5 167.7 steps/s ETA 10.9m
+[Online] step 100000/200000 eps=0.000 buffer=100000 q_loss=20.6159 pi_loss=-8.1797 ent_alpha=0.000 rep_loss=0.0292 bonus=0.4268 success=0.000 (last 100) ema=0.000 cum=0.085 auc=8235.7 167.7 steps/s ETA 9.9m
+[Online] step 110000/200000 eps=0.000 buffer=100000 q_loss=23.8494 pi_loss=-8.1246 ent_alpha=0.000 rep_loss=0.1003 bonus=0.5189 success=0.010 (last 100) ema=0.000 cum=0.079 auc=9054.5 167.7 steps/s ETA 8.9m
+[Online] step 120000/200000 eps=0.000 buffer=100000 q_loss=52.4010 pi_loss=-9.0819 ent_alpha=0.000 rep_loss=0.0124 bonus=0.6019 success=0.000 (last 100) ema=0.000 cum=0.073 auc=9815.2 167.7 steps/s ETA 7.9m
+[Online] step 130000/200000 eps=0.000 buffer=100000 q_loss=13.1792 pi_loss=-8.9664 ent_alpha=0.000 rep_loss=0.0319 bonus=0.4850 success=0.010 (last 100) ema=0.001 cum=0.069 auc=10525.5 167.8 steps/s ETA 7.0m
+[Online] step 140000/200000 eps=0.000 buffer=100000 q_loss=16.5310 pi_loss=-5.7077 ent_alpha=0.000 rep_loss=0.0242 bonus=0.6810 success=0.040 (last 100) ema=0.068 cum=0.065 auc=11193.5 167.8 steps/s ETA 6.0m
+[Online] step 150000/200000 eps=0.000 buffer=100000 q_loss=15.1159 pi_loss=-8.8249 ent_alpha=0.000 rep_loss=0.0267 bonus=0.5262 success=0.360 (last 100) ema=0.439 cum=0.073 auc=11861.8 167.9 steps/s ETA 5.0m
+[Online] step 160000/200000 eps=0.000 buffer=100000 q_loss=14.1711 pi_loss=-3.9751 ent_alpha=0.000 rep_loss=0.1430 bonus=0.5096 success=0.120 (last 100) ema=0.164 cum=0.088 auc=12708.3 167.9 steps/s ETA 4.0m
+[Online] step 170000/200000 eps=0.000 buffer=100000 q_loss=13.2346 pi_loss=-1.4025 ent_alpha=0.000 rep_loss=0.0008 bonus=0.4212 success=0.010 (last 100) ema=0.045 cum=0.086 auc=13583.8 167.9 steps/s ETA 3.0m
+[Online] step 180000/200000 eps=0.000 buffer=100000 q_loss=11.6792 pi_loss=-2.8325 ent_alpha=0.000 rep_loss=0.0020 bonus=0.4134 success=0.010 (last 100) ema=0.002 cum=0.084 auc=14444.6 167.9 steps/s ETA 2.0m
+[Online] step 190000/200000 eps=0.000 buffer=100000 q_loss=9.8465 pi_loss=-1.3293 ent_alpha=0.000 rep_loss=0.0591 bonus=0.5354 success=0.000 (last 100) ema=0.000 cum=0.081 auc=15271.8 167.9 steps/s ETA 1.0m
+[Online] step 200000/200000 eps=0.000 buffer=100000 q_loss=19.3400 pi_loss=-0.2354 ent_alpha=0.000 rep_loss=0.0249 bonus=0.5208 success=0.020 (last 100) ema=0.009 cum=0.077 auc=16061.6 168.0 steps/s ETA 0.0m
+[Online] periodicity/BISCUIT seed=0 bonus_scale=1.0 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=1.0285 success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 2.0 steps/s ETA 1640.6m
+[Online] step 10000/200000 eps=0.000 buffer=100000 q_loss=13.7555 pi_loss=-1.4268 ent_alpha=0.102 rep_loss=1.9588 bonus=0.3736 success=0.140 (last 100) ema=0.217 cum=0.110 auc=806.9 35.3 steps/s ETA 89.8m
+[Online] step 20000/200000 eps=0.000 buffer=100000 q_loss=11.5312 pi_loss=-1.3739 ent_alpha=0.034 rep_loss=2.0781 bonus=0.3924 success=0.000 (last 100) ema=0.000 cum=0.065 auc=1681.7 35.4 steps/s ETA 84.8m
+[Online] step 30000/200000 eps=0.000 buffer=100000 q_loss=10.9540 pi_loss=-1.6138 ent_alpha=0.015 rep_loss=1.9323 bonus=0.4871 success=0.000 (last 100) ema=0.000 cum=0.054 auc=2266.8 35.4 steps/s ETA 79.9m
+[Online] step 40000/200000 eps=0.000 buffer=100000 q_loss=11.4572 pi_loss=-3.5619 ent_alpha=0.007 rep_loss=1.9570 bonus=0.3685 success=0.000 (last 100) ema=0.000 cum=0.042 auc=2738.7 35.5 steps/s ETA 75.2m
+[Online] step 50000/200000 eps=0.000 buffer=100000 q_loss=12.5723 pi_loss=-4.6184 ent_alpha=0.003 rep_loss=1.8295 bonus=0.3799 success=0.000 (last 100) ema=0.000 cum=0.034 auc=3117.6 35.5 steps/s ETA 70.5m
+[Online] step 60000/200000 eps=0.000 buffer=100000 q_loss=9.7366 pi_loss=-5.5672 ent_alpha=0.002 rep_loss=1.8260 bonus=0.4723 success=0.010 (last 100) ema=0.010 cum=0.030 auc=3438.1 35.5 steps/s ETA 65.8m
+[Online] step 70000/200000 eps=0.000 buffer=100000 q_loss=14.4566 pi_loss=-7.0727 ent_alpha=0.001 rep_loss=1.8850 bonus=0.4384 success=0.000 (last 100) ema=0.000 cum=0.035 auc=3743.9 35.5 steps/s ETA 61.0m
+[Online] step 80000/200000 eps=0.000 buffer=100000 q_loss=10.4879 pi_loss=-4.6872 ent_alpha=0.000 rep_loss=1.8828 bonus=0.4195 success=0.020 (last 100) ema=0.016 cum=0.034 auc=4094.7 35.6 steps/s ETA 56.2m
+[Online] step 90000/200000 eps=0.000 buffer=100000 q_loss=17.1134 pi_loss=-3.8974 ent_alpha=0.000 rep_loss=2.1093 bonus=0.3904 success=0.010 (last 100) ema=0.001 cum=0.032 auc=4428.0 35.6 steps/s ETA 51.5m
+[Online] step 100000/200000 eps=0.000 buffer=100000 q_loss=18.6219 pi_loss=-9.2154 ent_alpha=0.000 rep_loss=1.8742 bonus=0.2817 success=0.190 (last 100) ema=0.130 cum=0.042 auc=4784.8 35.6 steps/s ETA 46.8m
+[Online] step 110000/200000 eps=0.000 buffer=100000 q_loss=15.8439 pi_loss=-6.0456 ent_alpha=0.000 rep_loss=1.9542 bonus=0.4611 success=0.000 (last 100) ema=0.000 cum=0.039 auc=5193.5 35.7 steps/s ETA 42.1m
+[Online] step 120000/200000 eps=0.000 buffer=100000 q_loss=12.5319 pi_loss=-3.8599 ent_alpha=0.000 rep_loss=1.9872 bonus=0.3051 success=0.000 (last 100) ema=0.000 cum=0.036 auc=5569.5 35.7 steps/s ETA 37.4m
+[Online] step 130000/200000 eps=0.000 buffer=100000 q_loss=20.7314 pi_loss=-7.7969 ent_alpha=0.000 rep_loss=1.9947 bonus=0.3574 success=0.020 (last 100) ema=0.035 cum=0.034 auc=5919.5 35.7 steps/s ETA 32.7m
+[Online] step 140000/200000 eps=0.000 buffer=100000 q_loss=13.6787 pi_loss=-5.9267 ent_alpha=0.000 rep_loss=2.0283 bonus=0.4680 success=0.000 (last 100) ema=0.000 cum=0.032 auc=6252.3 35.7 steps/s ETA 28.0m
+[Online] step 150000/200000 eps=0.000 buffer=100000 q_loss=16.2563 pi_loss=-3.8455 ent_alpha=0.000 rep_loss=2.0766 bonus=0.3687 success=0.030 (last 100) ema=0.068 cum=0.031 auc=6567.2 35.7 steps/s ETA 23.3m
+[Online] step 160000/200000 eps=0.000 buffer=100000 q_loss=10.3812 pi_loss=0.3757 ent_alpha=0.000 rep_loss=2.1956 bonus=0.3801 success=0.000 (last 100) ema=0.000 cum=0.030 auc=6871.1 35.7 steps/s ETA 18.7m
+[Online] step 170000/200000 eps=0.000 buffer=100000 q_loss=10.4258 pi_loss=-2.1266 ent_alpha=0.000 rep_loss=2.0240 bonus=0.4163 success=0.000 (last 100) ema=0.000 cum=0.028 auc=7164.3 35.7 steps/s ETA 14.0m
+[Online] step 180000/200000 eps=0.000 buffer=100000 q_loss=14.6995 pi_loss=-6.2479 ent_alpha=0.000 rep_loss=1.8944 bonus=0.3914 success=0.000 (last 100) ema=0.000 cum=0.027 auc=7443.5 35.7 steps/s ETA 9.3m
+[Online] step 190000/200000 eps=0.000 buffer=100000 q_loss=7.9152 pi_loss=0.1846 ent_alpha=0.000 rep_loss=1.8314 bonus=0.4165 success=0.000 (last 100) ema=0.000 cum=0.026 auc=7709.8 35.8 steps/s ETA 4.7m
+[Online] step 200000/200000 eps=0.000 buffer=100000 q_loss=10.7339 pi_loss=0.7973 ent_alpha=0.000 rep_loss=1.9689 bonus=0.4138 success=0.000 (last 100) ema=0.000 cum=0.025 auc=7963.6 35.8 steps/s ETA 0.0m
+[Online] periodicity/CBM seed=0 bonus_scale=1.0 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=1.7566 success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 2.3 steps/s ETA 1480.5m
+    CBM: train g...
+      g step   5000/10000
+      g step  10000/10000
+    CBM: train psi...
+      psi step   5000/10000
+      psi step  10000/10000
+    CBM: train reward predictor...
+      rew step   5000/10000
+      rew step  10000/10000
+    CBM: estimate CMI(dynamics) ...
+    CBM: estimate CMI(reward) ...
+[Online] step 10000/200000 eps=0.000 buffer=100000 q_loss=13.3447 pi_loss=-1.4723 ent_alpha=0.179 rep_loss=n/a bonus=0.3236 success=0.080 (last 100) ema=0.033 cum=0.158 auc=1575.0 22.7 steps/s ETA 139.4m
+[Online] step 20000/200000 eps=0.000 buffer=100000 q_loss=10.4388 pi_loss=-1.3139 ent_alpha=0.060 rep_loss=n/a bonus=0.3384 success=0.010 (last 100) ema=0.003 cum=0.145 auc=3213.2 41.9 steps/s ETA 71.6m
+[Online] step 30000/200000 eps=0.000 buffer=100000 q_loss=12.1600 pi_loss=-1.7507 ent_alpha=0.023 rep_loss=n/a bonus=0.4270 success=0.020 (last 100) ema=0.045 cum=0.101 auc=4412.6 58.3 steps/s ETA 48.6m
+[Online] step 40000/200000 eps=0.000 buffer=100000 q_loss=11.3800 pi_loss=-3.0076 ent_alpha=0.010 rep_loss=n/a bonus=0.4799 success=0.000 (last 100) ema=0.000 cum=0.101 auc=5494.5 72.5 steps/s ETA 36.8m
+[Online] step 50000/200000 eps=0.000 buffer=100000 q_loss=14.5608 pi_loss=-3.1041 ent_alpha=0.005 rep_loss=n/a bonus=0.3214 success=0.000 (last 100) ema=0.000 cum=0.082 auc=6404.8 84.9 steps/s ETA 29.5m
+    CBM: train g...
+      g step   5000/10000
+      g step  10000/10000
+    CBM: train psi...
+      psi step   5000/10000
+      psi step  10000/10000
+    CBM: train reward predictor...
+      rew step   5000/10000
+      rew step  10000/10000
+    CBM: estimate CMI(dynamics) ...
+    CBM: estimate CMI(reward) ...
+[Online] step 60000/200000 eps=0.000 buffer=100000 q_loss=8.2091 pi_loss=-3.8917 ent_alpha=0.002 rep_loss=n/a bonus=0.3677 success=0.000 (last 100) ema=0.000 cum=0.070 auc=7159.7 58.4 steps/s ETA 40.0m
+[Online] step 70000/200000 eps=0.000 buffer=100000 q_loss=12.4448 pi_loss=-8.7023 ent_alpha=0.001 rep_loss=n/a bonus=0.3439 success=0.030 (last 100) ema=0.010 cum=0.064 auc=7830.5 65.7 steps/s ETA 33.0m
+[Online] step 80000/200000 eps=0.000 buffer=100000 q_loss=19.8094 pi_loss=-7.7525 ent_alpha=0.001 rep_loss=n/a bonus=0.5046 success=0.020 (last 100) ema=0.020 cum=0.063 auc=8491.0 72.5 steps/s ETA 27.6m
+[Online] step 90000/200000 eps=0.000 buffer=100000 q_loss=10.8764 pi_loss=-6.2401 ent_alpha=0.000 rep_loss=n/a bonus=0.4711 success=0.010 (last 100) ema=0.004 cum=0.056 auc=9085.1 78.9 steps/s ETA 23.2m
+[Online] step 100000/200000 eps=0.000 buffer=100000 q_loss=15.1801 pi_loss=-6.6931 ent_alpha=0.000 rep_loss=n/a bonus=0.4069 success=0.070 (last 100) ema=0.109 cum=0.052 auc=9623.4 84.9 steps/s ETA 19.6m
+    CBM: train g...
+      g step   5000/10000
+      g step  10000/10000
+    CBM: train psi...
+      psi step   5000/10000
+      psi step  10000/10000
+    CBM: train reward predictor...
+      rew step   5000/10000
+      rew step  10000/10000
+    CBM: estimate CMI(dynamics) ...
+    CBM: estimate CMI(reward) ...
+[Online] step 110000/200000 eps=0.000 buffer=100000 q_loss=14.5899 pi_loss=-5.7272 ent_alpha=0.000 rep_loss=n/a bonus=0.4576 success=0.000 (last 100) ema=0.000 cum=0.051 auc=10151.9 68.0 steps/s ETA 22.1m
+[Online] step 120000/200000 eps=0.000 buffer=100000 q_loss=11.4951 pi_loss=-7.2042 ent_alpha=0.000 rep_loss=n/a bonus=0.3453 success=0.000 (last 100) ema=0.000 cum=0.047 auc=10641.6 72.5 steps/s ETA 18.4m
+[Online] step 130000/200000 eps=0.000 buffer=100000 q_loss=12.1235 pi_loss=-5.1286 ent_alpha=0.000 rep_loss=n/a bonus=0.3475 success=0.000 (last 100) ema=0.000 cum=0.044 auc=11094.9 76.8 steps/s ETA 15.2m
+[Online] step 140000/200000 eps=0.000 buffer=100000 q_loss=16.5542 pi_loss=-5.3627 ent_alpha=0.000 rep_loss=n/a bonus=0.3915 success=0.550 (last 100) ema=0.756 cum=0.061 auc=11581.7 80.9 steps/s ETA 12.4m
+[Online] step 150000/200000 eps=0.000 buffer=100000 q_loss=14.8242 pi_loss=-7.7451 ent_alpha=0.000 rep_loss=n/a bonus=0.3723 success=0.110 (last 100) ema=0.276 cum=0.077 auc=12314.8 84.8 steps/s ETA 9.8m
+    CBM: train g...
+      g step   5000/10000
+      g step  10000/10000
+    CBM: train psi...
+      psi step   5000/10000
+      psi step  10000/10000
+    CBM: train reward predictor...
+      rew step   5000/10000
+      rew step  10000/10000
+    CBM: estimate CMI(dynamics) ...
+    CBM: estimate CMI(reward) ...
+[Online] step 160000/200000 eps=0.000 buffer=100000 q_loss=10.7586 pi_loss=-4.1308 ent_alpha=0.000 rep_loss=n/a bonus=0.3382 success=0.100 (last 100) ema=0.091 cum=0.080 auc=13107.8 72.5 steps/s ETA 9.2m
+[Online] step 170000/200000 eps=0.000 buffer=100000 q_loss=11.1904 pi_loss=-1.0347 ent_alpha=0.000 rep_loss=n/a bonus=0.3304 success=0.020 (last 100) ema=0.044 cum=0.087 auc=13964.7 75.7 steps/s ETA 6.6m
+[Online] step 180000/200000 eps=0.000 buffer=100000 q_loss=18.3130 pi_loss=-7.4592 ent_alpha=0.000 rep_loss=n/a bonus=0.3786 success=0.070 (last 100) ema=0.051 cum=0.086 auc=14828.9 78.9 steps/s ETA 4.2m
+[Online] step 190000/200000 eps=0.000 buffer=100000 q_loss=19.0951 pi_loss=-8.5176 ent_alpha=0.000 rep_loss=n/a bonus=0.3467 success=0.000 (last 100) ema=0.000 cum=0.082 auc=15669.6 81.9 steps/s ETA 2.0m
+[Online] step 200000/200000 eps=0.000 buffer=100000 q_loss=12.1465 pi_loss=-4.9707 ent_alpha=0.000 rep_loss=n/a bonus=0.3548 success=0.060 (last 100) ema=0.047 cum=0.083 auc=16497.6 84.9 steps/s ETA 0.0m
+[Online] periodicity/CRTR seed=0 bonus_scale=0.0 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=1.4142 success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 283.7 steps/s ETA 11.8m
+[Online] step 10000/200000 eps=0.000 buffer=100000 q_loss=0.1451 pi_loss=-4.6107 ent_alpha=0.425 rep_loss=5.2433 bonus=0.3791 success=0.130 (last 100) ema=0.144 cum=0.122 auc=1393.8 48.3 steps/s ETA 65.6m
+[Online] step 20000/200000 eps=0.000 buffer=100000 q_loss=3.7777 pi_loss=-11.9540 ent_alpha=0.894 rep_loss=5.2452 bonus=0.5222 success=0.080 (last 100) ema=0.038 cum=0.104 auc=2530.5 42.0 steps/s ETA 71.5m
+[Online] step 30000/200000 eps=0.000 buffer=100000 q_loss=22.5323 pi_loss=-26.3998 ent_alpha=1.886 rep_loss=5.2386 bonus=0.4275 success=0.050 (last 100) ema=0.030 cum=0.093 auc=3508.3 40.4 steps/s ETA 70.2m
+[Online] step 40000/200000 eps=0.000 buffer=100000 q_loss=123.0333 pi_loss=-56.7755 ent_alpha=4.007 rep_loss=5.2426 bonus=0.5074 success=0.030 (last 100) ema=0.029 cum=0.089 auc=4421.0 39.6 steps/s ETA 67.4m
+[Online] step 50000/200000 eps=0.000 buffer=100000 q_loss=295.8801 pi_loss=-122.6169 ent_alpha=8.489 rep_loss=5.2451 bonus=0.4126 success=0.070 (last 100) ema=0.054 cum=0.088 auc=5303.2 39.1 steps/s ETA 63.9m
+[Online] step 60000/200000 eps=0.000 buffer=100000 q_loss=835.3040 pi_loss=-198.4104 ent_alpha=10.000 rep_loss=5.2483 bonus=0.5026 success=0.090 (last 100) ema=0.097 cum=0.086 auc=6175.7 38.8 steps/s ETA 60.1m
+[Online] step 70000/200000 eps=0.000 buffer=100000 q_loss=1267.3284 pi_loss=-242.1962 ent_alpha=10.000 rep_loss=5.2440 bonus=0.4392 success=0.030 (last 100) ema=0.021 cum=0.081 auc=7007.1 38.7 steps/s ETA 56.0m
+[Online] step 80000/200000 eps=0.000 buffer=100000 q_loss=4552.7852 pi_loss=-265.6224 ent_alpha=10.000 rep_loss=5.2372 bonus=0.5024 success=0.020 (last 100) ema=0.003 cum=0.077 auc=7800.8 38.6 steps/s ETA 51.9m
+[Online] step 90000/200000 eps=0.000 buffer=100000 q_loss=1746.2277 pi_loss=-281.2392 ent_alpha=10.000 rep_loss=5.2512 bonus=0.4296 success=0.010 (last 100) ema=0.006 cum=0.074 auc=8556.5 38.5 steps/s ETA 47.7m
+[Online] step 100000/200000 eps=0.000 buffer=100000 q_loss=3640.8169 pi_loss=-291.0680 ent_alpha=10.000 rep_loss=5.2484 bonus=0.3977 success=0.070 (last 100) ema=0.071 cum=0.071 auc=9284.2 38.4 steps/s ETA 43.4m
+[Online] step 110000/200000 eps=0.000 buffer=100000 q_loss=6853.4785 pi_loss=-293.9150 ent_alpha=10.000 rep_loss=5.2395 bonus=0.4486 success=0.040 (last 100) ema=0.015 cum=0.069 auc=9982.3 38.4 steps/s ETA 39.1m
+[Online] step 120000/200000 eps=0.000 buffer=100000 q_loss=2485.1704 pi_loss=-294.1250 ent_alpha=10.000 rep_loss=5.2390 bonus=0.6488 success=0.050 (last 100) ema=0.074 cum=0.067 auc=10658.8 38.3 steps/s ETA 34.8m
+[Online] step 130000/200000 eps=0.000 buffer=100000 q_loss=742.1855 pi_loss=-297.0862 ent_alpha=10.000 rep_loss=5.2484 bonus=0.5205 success=0.010 (last 100) ema=0.019 cum=0.065 auc=11323.4 38.3 steps/s ETA 30.5m
+[Online] step 140000/200000 eps=0.000 buffer=100000 q_loss=1960.0094 pi_loss=-300.4334 ent_alpha=10.000 rep_loss=5.2412 bonus=0.5428 success=0.030 (last 100) ema=0.032 cum=0.064 auc=11966.9 38.3 steps/s ETA 26.1m
+[Online] step 150000/200000 eps=0.000 buffer=100000 q_loss=1988.8126 pi_loss=-299.5408 ent_alpha=10.000 rep_loss=5.2390 bonus=0.6284 success=0.030 (last 100) ema=0.030 cum=0.063 auc=12598.8 38.3 steps/s ETA 21.8m
+[Online] step 160000/200000 eps=0.000 buffer=100000 q_loss=3248.7769 pi_loss=-299.5308 ent_alpha=10.000 rep_loss=5.2449 bonus=0.5084 success=0.080 (last 100) ema=0.110 cum=0.062 auc=13219.9 38.2 steps/s ETA 17.4m
+[Online] step 170000/200000 eps=0.000 buffer=100000 q_loss=1903.9399 pi_loss=-300.1762 ent_alpha=10.000 rep_loss=5.2426 bonus=0.4212 success=0.040 (last 100) ema=0.077 cum=0.061 auc=13831.2 38.2 steps/s ETA 13.1m
+[Online] step 180000/200000 eps=0.000 buffer=100000 q_loss=2013.6582 pi_loss=-296.5515 ent_alpha=10.000 rep_loss=5.2419 bonus=0.5240 success=0.040 (last 100) ema=0.053 cum=0.059 auc=14430.5 38.2 steps/s ETA 8.7m
+[Online] step 190000/200000 eps=0.000 buffer=100000 q_loss=3864.5020 pi_loss=-297.2217 ent_alpha=10.000 rep_loss=5.2334 bonus=0.6018 success=0.020 (last 100) ema=0.014 cum=0.058 auc=15019.1 38.2 steps/s ETA 4.4m
+[Online] step 200000/200000 eps=0.000 buffer=100000 q_loss=3851.2708 pi_loss=-296.0630 ent_alpha=10.000 rep_loss=5.2397 bonus=0.5067 success=0.020 (last 100) ema=0.025 cum=0.057 auc=15597.2 38.2 steps/s ETA 0.0m
+[Online] periodicity/CRTR seed=0 bonus_scale=0.1 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=1.4142 success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 282.6 steps/s ETA 11.8m
+[Online] step 10000/200000 eps=0.000 buffer=100000 q_loss=0.6838 pi_loss=-4.4592 ent_alpha=0.426 rep_loss=5.2340 bonus=0.5844 success=0.150 (last 100) ema=0.136 cum=0.127 auc=1244.2 48.3 steps/s ETA 65.6m
+[Online] step 20000/200000 eps=0.000 buffer=100000 q_loss=7.2015 pi_loss=-11.6585 ent_alpha=0.903 rep_loss=5.2395 bonus=0.4138 success=0.080 (last 100) ema=0.062 cum=0.113 auc=2462.0 41.8 steps/s ETA 71.7m
+[Online] step 30000/200000 eps=0.000 buffer=100000 q_loss=4.9389 pi_loss=-26.7744 ent_alpha=1.908 rep_loss=5.2424 bonus=0.6651 success=0.070 (last 100) ema=0.084 cum=0.105 auc=3557.4 40.2 steps/s ETA 70.4m
+[Online] step 40000/200000 eps=0.000 buffer=100000 q_loss=20.0219 pi_loss=-57.5862 ent_alpha=4.047 rep_loss=5.2397 bonus=0.4305 success=0.070 (last 100) ema=0.052 cum=0.100 auc=4574.4 39.5 steps/s ETA 67.5m
+[Online] step 50000/200000 eps=0.000 buffer=100000 q_loss=685.0650 pi_loss=-122.7007 ent_alpha=8.578 rep_loss=5.2360 bonus=0.4433 success=0.050 (last 100) ema=0.042 cum=0.096 auc=5550.0 39.1 steps/s ETA 63.9m
+[Online] step 60000/200000 eps=0.000 buffer=100000 q_loss=1339.6794 pi_loss=-199.0285 ent_alpha=10.000 rep_loss=5.2445 bonus=0.4722 success=0.070 (last 100) ema=0.033 cum=0.092 auc=6491.7 38.9 steps/s ETA 60.0m
+[Online] step 70000/200000 eps=0.000 buffer=100000 q_loss=2494.4043 pi_loss=-241.8069 ent_alpha=10.000 rep_loss=5.2446 bonus=0.5460 success=0.060 (last 100) ema=0.011 cum=0.087 auc=7385.3 38.7 steps/s ETA 55.9m
+[Online] step 80000/200000 eps=0.000 buffer=100000 q_loss=2015.3580 pi_loss=-266.3646 ent_alpha=10.000 rep_loss=5.2412 bonus=0.4273 success=0.060 (last 100) ema=0.053 cum=0.083 auc=8237.1 38.6 steps/s ETA 51.8m
+[Online] step 90000/200000 eps=0.000 buffer=100000 q_loss=599.0947 pi_loss=-282.9259 ent_alpha=10.000 rep_loss=5.2430 bonus=0.5085 success=0.070 (last 100) ema=0.009 cum=0.079 auc=9046.4 38.6 steps/s ETA 47.5m
+[Online] step 100000/200000 eps=0.000 buffer=100000 q_loss=1831.3630 pi_loss=-289.2337 ent_alpha=10.000 rep_loss=5.2427 bonus=0.5619 success=0.060 (last 100) ema=0.090 cum=0.076 auc=9820.8 38.5 steps/s ETA 43.2m
+[Online] step 110000/200000 eps=0.000 buffer=100000 q_loss=3114.6658 pi_loss=-293.8992 ent_alpha=10.000 rep_loss=5.2476 bonus=0.4268 success=0.050 (last 100) ema=0.039 cum=0.073 auc=10566.8 38.5 steps/s ETA 39.0m
+[Online] step 120000/200000 eps=0.000 buffer=100000 q_loss=2494.2917 pi_loss=-298.2423 ent_alpha=10.000 rep_loss=5.2366 bonus=0.5953 success=0.030 (last 100) ema=0.033 cum=0.071 auc=11293.5 38.5 steps/s ETA 34.7m
+[Online] step 130000/200000 eps=0.000 buffer=100000 q_loss=3142.5103 pi_loss=-295.2632 ent_alpha=10.000 rep_loss=5.2438 bonus=0.5133 success=0.050 (last 100) ema=0.032 cum=0.070 auc=11999.3 38.4 steps/s ETA 30.4m
+[Online] step 140000/200000 eps=0.000 buffer=100000 q_loss=1907.3232 pi_loss=-298.0082 ent_alpha=10.000 rep_loss=5.2468 bonus=0.4915 success=0.050 (last 100) ema=0.041 cum=0.067 auc=12686.1 38.4 steps/s ETA 26.0m
+[Online] step 150000/200000 eps=0.000 buffer=100000 q_loss=2593.6636 pi_loss=-298.4491 ent_alpha=10.000 rep_loss=5.2439 bonus=0.4391 success=0.100 (last 100) ema=0.080 cum=0.067 auc=13355.3 38.4 steps/s ETA 21.7m
+[Online] step 160000/200000 eps=0.000 buffer=100000 q_loss=3255.9114 pi_loss=-297.8458 ent_alpha=10.000 rep_loss=5.2437 bonus=0.5447 success=0.020 (last 100) ema=0.046 cum=0.066 auc=14019.2 38.4 steps/s ETA 17.4m
+[Online] step 170000/200000 eps=0.000 buffer=100000 q_loss=3889.3269 pi_loss=-298.8824 ent_alpha=10.000 rep_loss=5.2424 bonus=0.4536 success=0.000 (last 100) ema=0.001 cum=0.065 auc=14673.0 38.3 steps/s ETA 13.0m
+[Online] step 180000/200000 eps=0.000 buffer=100000 q_loss=692.4062 pi_loss=-299.2350 ent_alpha=10.000 rep_loss=5.2451 bonus=0.4694 success=0.030 (last 100) ema=0.049 cum=0.063 auc=15312.4 38.3 steps/s ETA 8.7m
+[Online] step 190000/200000 eps=0.000 buffer=100000 q_loss=1352.7675 pi_loss=-298.4864 ent_alpha=10.000 rep_loss=5.2469 bonus=0.4911 success=0.050 (last 100) ema=0.113 cum=0.063 auc=15941.8 38.3 steps/s ETA 4.3m
+[Online] step 200000/200000 eps=0.000 buffer=100000 q_loss=5094.6416 pi_loss=-296.4728 ent_alpha=10.000 rep_loss=5.2377 bonus=0.4738 success=0.030 (last 100) ema=0.015 cum=0.061 auc=16562.1 38.3 steps/s ETA 0.0m
+[Online] periodicity/CRTR seed=0 bonus_scale=0.3 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=1.4142 success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 284.5 steps/s ETA 11.7m
+[Online] step 10000/200000 eps=0.000 buffer=100000 q_loss=1.5299 pi_loss=-4.2894 ent_alpha=0.419 rep_loss=5.2461 bonus=0.5635 success=0.150 (last 100) ema=0.177 cum=0.119 auc=1081.2 48.8 steps/s ETA 64.9m
+[Online] step 20000/200000 eps=0.000 buffer=100000 q_loss=4.3733 pi_loss=-11.0389 ent_alpha=0.893 rep_loss=5.2391 bonus=0.4181 success=0.150 (last 100) ema=0.141 cum=0.119 auc=2298.3 41.9 steps/s ETA 71.6m
+[Online] step 30000/200000 eps=0.000 buffer=100000 q_loss=10.6181 pi_loss=-25.5572 ent_alpha=1.917 rep_loss=5.2432 bonus=0.4309 success=0.110 (last 100) ema=0.164 cum=0.108 auc=3430.4 40.2 steps/s ETA 70.5m
+[Online] step 40000/200000 eps=0.000 buffer=100000 q_loss=148.2667 pi_loss=-57.0824 ent_alpha=4.062 rep_loss=5.2386 bonus=0.4961 success=0.090 (last 100) ema=0.080 cum=0.102 auc=4475.7 39.5 steps/s ETA 67.6m
+[Online] step 50000/200000 eps=0.000 buffer=100000 q_loss=207.0789 pi_loss=-122.1234 ent_alpha=8.599 rep_loss=5.2448 bonus=0.4618 success=0.090 (last 100) ema=0.103 cum=0.099 auc=5474.6 39.0 steps/s ETA 64.1m
+[Online] step 60000/200000 eps=0.000 buffer=100000 q_loss=1117.0544 pi_loss=-198.8404 ent_alpha=10.000 rep_loss=5.2434 bonus=0.4471 success=0.050 (last 100) ema=0.049 cum=0.096 auc=6452.4 38.7 steps/s ETA 60.3m
+[Online] step 70000/200000 eps=0.000 buffer=100000 q_loss=1246.2761 pi_loss=-242.9082 ent_alpha=10.000 rep_loss=5.2372 bonus=0.4589 success=0.020 (last 100) ema=0.025 cum=0.090 auc=7378.1 38.6 steps/s ETA 56.2m
+[Online] step 80000/200000 eps=0.000 buffer=100000 q_loss=2974.3970 pi_loss=-266.7101 ent_alpha=10.000 rep_loss=5.2427 bonus=0.4279 success=0.070 (last 100) ema=0.153 cum=0.086 auc=8253.0 38.5 steps/s ETA 52.0m
+[Online] step 90000/200000 eps=0.000 buffer=100000 q_loss=2825.5718 pi_loss=-278.1629 ent_alpha=10.000 rep_loss=5.2394 bonus=0.4471 success=0.080 (last 100) ema=0.098 cum=0.081 auc=9080.2 38.4 steps/s ETA 47.7m
+[Online] step 100000/200000 eps=0.000 buffer=100000 q_loss=1271.6656 pi_loss=-288.7328 ent_alpha=10.000 rep_loss=5.2426 bonus=0.3835 success=0.030 (last 100) ema=0.006 cum=0.078 auc=9873.3 38.4 steps/s ETA 43.4m
+[Online] step 110000/200000 eps=0.000 buffer=100000 q_loss=1315.6519 pi_loss=-290.0401 ent_alpha=10.000 rep_loss=5.2446 bonus=0.6289 success=0.020 (last 100) ema=0.006 cum=0.075 auc=10638.1 38.3 steps/s ETA 39.1m
+[Online] step 120000/200000 eps=0.000 buffer=100000 q_loss=1864.5068 pi_loss=-295.9670 ent_alpha=10.000 rep_loss=5.2379 bonus=0.4328 success=0.030 (last 100) ema=0.045 cum=0.072 auc=11371.1 38.3 steps/s ETA 34.8m
+[Online] step 130000/200000 eps=0.000 buffer=100000 q_loss=3839.9365 pi_loss=-298.6562 ent_alpha=10.000 rep_loss=5.2469 bonus=0.5513 success=0.010 (last 100) ema=0.005 cum=0.070 auc=12083.4 38.3 steps/s ETA 30.5m
+[Online] step 140000/200000 eps=0.000 buffer=100000 q_loss=5089.9858 pi_loss=-296.9375 ent_alpha=10.000 rep_loss=5.2395 bonus=0.4244 success=0.020 (last 100) ema=0.001 cum=0.069 auc=12774.2 38.3 steps/s ETA 26.1m
+[Online] step 150000/200000 eps=0.000 buffer=100000 q_loss=1297.8734 pi_loss=-297.0343 ent_alpha=10.000 rep_loss=5.2397 bonus=0.5014 success=0.080 (last 100) ema=0.105 cum=0.067 auc=13447.0 38.3 steps/s ETA 21.8m
+[Online] step 160000/200000 eps=0.000 buffer=100000 q_loss=2587.0039 pi_loss=-296.4012 ent_alpha=10.000 rep_loss=5.2385 bonus=0.4936 success=0.090 (last 100) ema=0.064 cum=0.066 auc=14106.2 38.3 steps/s ETA 17.4m
+[Online] step 170000/200000 eps=0.000 buffer=100000 q_loss=1963.3025 pi_loss=-297.2106 ent_alpha=10.000 rep_loss=5.2363 bonus=0.4731 success=0.030 (last 100) ema=0.040 cum=0.065 auc=14761.7 38.2 steps/s ETA 13.1m
+[Online] step 180000/200000 eps=0.000 buffer=100000 q_loss=1315.1421 pi_loss=-300.8464 ent_alpha=10.000 rep_loss=5.2437 bonus=0.5973 success=0.090 (last 100) ema=0.058 cum=0.064 auc=15402.9 38.2 steps/s ETA 8.7m
+[Online] step 190000/200000 eps=0.000 buffer=100000 q_loss=3136.2285 pi_loss=-300.0236 ent_alpha=10.000 rep_loss=5.2417 bonus=0.5654 success=0.070 (last 100) ema=0.020 cum=0.062 auc=16034.3 38.2 steps/s ETA 4.4m
+[Online] step 200000/200000 eps=0.000 buffer=100000 q_loss=5121.9023 pi_loss=-296.1570 ent_alpha=10.000 rep_loss=5.2349 bonus=0.4978 success=0.090 (last 100) ema=0.114 cum=0.062 auc=16657.0 38.2 steps/s ETA 0.0m
+[Online] periodicity/CRTR seed=0 bonus_scale=3.0 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=1.4142 success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 278.9 steps/s ETA 12.0m
+[Online] step 10000/200000 eps=0.000 buffer=100000 q_loss=96.8882 pi_loss=-0.5182 ent_alpha=0.089 rep_loss=5.2446 bonus=0.4307 success=0.000 (last 100) ema=0.000 cum=0.164 auc=1462.4 47.5 steps/s ETA 66.7m
+[Online] step 20000/200000 eps=0.000 buffer=100000 q_loss=102.5090 pi_loss=-2.9869 ent_alpha=0.039 rep_loss=5.2288 bonus=0.6236 success=0.010 (last 100) ema=0.000 cum=0.088 auc=2644.1 42.1 steps/s ETA 71.2m
+[Online] step 30000/200000 eps=0.000 buffer=100000 q_loss=106.3486 pi_loss=-6.9429 ent_alpha=0.018 rep_loss=5.2357 bonus=0.4182 success=0.060 (last 100) ema=0.021 cum=0.111 auc=3543.9 40.4 steps/s ETA 70.1m
+[Online] step 40000/200000 eps=0.000 buffer=100000 q_loss=103.1694 pi_loss=-8.1514 ent_alpha=0.008 rep_loss=5.2502 bonus=0.5439 success=0.020 (last 100) ema=0.012 cum=0.102 auc=4623.8 39.3 steps/s ETA 67.9m
+[Online] step 50000/200000 eps=0.000 buffer=100000 q_loss=122.7841 pi_loss=-15.3791 ent_alpha=0.004 rep_loss=5.2350 bonus=0.4168 success=0.020 (last 100) ema=0.009 cum=0.085 auc=5552.1 39.1 steps/s ETA 64.0m
+[Online] step 60000/200000 eps=0.000 buffer=100000 q_loss=109.2659 pi_loss=-11.3824 ent_alpha=0.002 rep_loss=5.2357 bonus=0.5283 success=0.000 (last 100) ema=0.000 cum=0.072 auc=6335.9 39.0 steps/s ETA 59.8m
+[Online] step 70000/200000 eps=0.000 buffer=100000 q_loss=137.5918 pi_loss=-4.3915 ent_alpha=0.001 rep_loss=5.2209 bonus=0.4230 success=0.010 (last 100) ema=0.001 cum=0.063 auc=7006.5 39.0 steps/s ETA 55.6m
+[Online] step 80000/200000 eps=0.000 buffer=100000 q_loss=96.7519 pi_loss=-14.1027 ent_alpha=0.000 rep_loss=5.2538 bonus=0.4358 success=0.020 (last 100) ema=0.001 cum=0.056 auc=7598.3 38.9 steps/s ETA 51.4m
+[Online] step 90000/200000 eps=0.000 buffer=100000 q_loss=176.7634 pi_loss=-33.1374 ent_alpha=0.000 rep_loss=5.2198 bonus=0.4928 success=0.010 (last 100) ema=0.001 cum=0.058 auc=8187.1 38.7 steps/s ETA 47.3m
+[Online] step 100000/200000 eps=0.000 buffer=100000 q_loss=145.2837 pi_loss=-20.5792 ent_alpha=0.000 rep_loss=5.2107 bonus=0.4808 success=0.000 (last 100) ema=0.000 cum=0.055 auc=8756.8 38.7 steps/s ETA 43.1m
+[Online] step 110000/200000 eps=0.000 buffer=100000 q_loss=151.0755 pi_loss=-28.7399 ent_alpha=0.000 rep_loss=5.2263 bonus=0.5449 success=0.080 (last 100) ema=0.061 cum=0.053 auc=9288.8 38.6 steps/s ETA 38.8m
+[Online] step 120000/200000 eps=0.000 buffer=100000 q_loss=150.4913 pi_loss=-22.8925 ent_alpha=0.000 rep_loss=5.2321 bonus=0.4813 success=0.000 (last 100) ema=0.000 cum=0.055 auc=9835.6 38.5 steps/s ETA 34.6m
+[Online] step 130000/200000 eps=0.000 buffer=100000 q_loss=172.8247 pi_loss=-33.2079 ent_alpha=0.000 rep_loss=5.2455 bonus=0.4143 success=0.000 (last 100) ema=0.000 cum=0.052 auc=10372.9 38.5 steps/s ETA 30.3m
+[Online] step 140000/200000 eps=0.000 buffer=100000 q_loss=85.3670 pi_loss=-21.5150 ent_alpha=0.000 rep_loss=5.2286 bonus=0.3898 success=0.000 (last 100) ema=0.000 cum=0.050 auc=10885.7 38.5 steps/s ETA 26.0m
+[Online] step 150000/200000 eps=0.000 buffer=100000 q_loss=119.0701 pi_loss=-8.8906 ent_alpha=0.000 rep_loss=5.2173 bonus=0.4314 success=0.010 (last 100) ema=0.021 cum=0.048 auc=11375.7 38.5 steps/s ETA 21.7m
+[Online] step 160000/200000 eps=0.000 buffer=100000 q_loss=123.4280 pi_loss=-5.9074 ent_alpha=0.000 rep_loss=5.2194 bonus=0.3528 success=0.030 (last 100) ema=0.022 cum=0.046 auc=11843.2 38.5 steps/s ETA 17.3m
+[Online] step 170000/200000 eps=0.000 buffer=100000 q_loss=87.0326 pi_loss=-7.7452 ent_alpha=0.000 rep_loss=5.2413 bonus=0.5577 success=0.010 (last 100) ema=0.037 cum=0.044 auc=12292.8 38.5 steps/s ETA 13.0m
+[Online] step 180000/200000 eps=0.000 buffer=100000 q_loss=68.0610 pi_loss=-2.5280 ent_alpha=0.000 rep_loss=5.2419 bonus=0.3881 success=0.040 (last 100) ema=0.046 cum=0.042 auc=12725.0 38.5 steps/s ETA 8.7m
+[Online] step 190000/200000 eps=0.000 buffer=100000 q_loss=111.5541 pi_loss=-5.2294 ent_alpha=0.000 rep_loss=5.2228 bonus=0.4988 success=0.010 (last 100) ema=0.002 cum=0.041 auc=13144.1 38.5 steps/s ETA 4.3m
+[Online] step 200000/200000 eps=0.000 buffer=100000 q_loss=113.5308 pi_loss=-6.5530 ent_alpha=0.000 rep_loss=5.2437 bonus=0.4124 success=0.050 (last 100) ema=0.045 cum=0.040 auc=13551.7 38.5 steps/s ETA 0.0m

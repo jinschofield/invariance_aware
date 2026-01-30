@@ -1,0 +1,2 @@
+[Online] periodicity/CRTR seed=0 bonus_scale=1.0 steps=200000 num_envs=16 device=cuda
+[Online] step 1/200000 eps=0.000 buffer=16 q_loss=n/a pi_loss=n/a ent_alpha=n/a rep_loss=n/a bonus=1.4142 success=1.000 (last 1) ema=1.000 cum=1.000 auc=1.0 0.3 steps/s ETA 11681.8m
