@@ -4,7 +4,11 @@ import torch
 
 from ti.metrics.elliptical import build_precision_A_from_buffer, elliptical_bonus, feat_from_enc
 
-from periodicity_study.common import build_obs_from_pos_phase, free_positions, maze_cfg_from_config
+from periodicity_study.common import (
+    build_obs_from_pos_nuisance,
+    free_positions_for_env,
+    maze_cfg_from_config,
+)
 
 
 def _student_t_pvalue(t_val: torch.Tensor, df: int) -> torch.Tensor:
@@ -69,28 +73,33 @@ def _obs_to_pos(obs: torch.Tensor, maze_size: int) -> torch.Tensor:
     return pos.clamp(0, maze_size - 1)
 
 
-def rep_invariance_by_position(rep, cfg, device: torch.device) -> torch.Tensor:
+def rep_invariance_by_position(rep, cfg, device: torch.device, env_id: str) -> torch.Tensor:
     maze_cfg = maze_cfg_from_config(cfg)
-    free = free_positions(maze_cfg["maze_size"], device)
-    P = int(maze_cfg["periodic_P"])
+    free = free_positions_for_env(env_id, maze_cfg["maze_size"], device)
+    if env_id.startswith("slippery"):
+        K = int(maze_cfg["slippery_D"])
+    elif env_id.startswith("teacup"):
+        K = int(maze_cfg["teacup_P"])
+    else:
+        K = int(maze_cfg["periodic_P"])
 
-    # Evaluate invariance across all free positions and all phase pairs.
-    pos_rep = free.repeat_interleave(P, dim=0)
-    phases = torch.arange(P, device=device).repeat(free.shape[0])
-    obs = build_obs_from_pos_phase(pos_rep, phases, maze_cfg["maze_size"], P)
+    # Evaluate invariance across all free positions and all nuisance pairs.
+    pos_rep = free.repeat_interleave(K, dim=0)
+    nuis = torch.arange(K, device=device).repeat(free.shape[0])
+    obs = build_obs_from_pos_nuisance(env_id, pos_rep, nuis, maze_cfg, device)
 
-    z = rep.encode(obs).reshape(free.shape[0], P, -1)
+    z = rep.encode(obs).reshape(free.shape[0], K, -1)
     d = torch.cdist(z, z, p=2)
-    mask = ~torch.eye(P, device=device, dtype=torch.bool)
+    mask = ~torch.eye(K, device=device, dtype=torch.bool)
     d_off = d[:, mask].reshape(free.shape[0], -1)
     return d_off.mean(dim=1)
 
 
-def coverage_from_buffer(buf, cfg, device: torch.device) -> float:
+def coverage_from_buffer(buf, cfg, device: torch.device, env_id: str) -> float:
     if buf is None or buf.size <= 0:
         return float("nan")
     maze_cfg = maze_cfg_from_config(cfg)
-    free = free_positions(maze_cfg["maze_size"], device)
+    free = free_positions_for_env(env_id, maze_cfg["maze_size"], device)
     obs = buf.s[: buf.size]
     pos = _obs_to_pos(obs, maze_cfg["maze_size"])
     maze_size = int(maze_cfg["maze_size"])
@@ -98,7 +107,9 @@ def coverage_from_buffer(buf, cfg, device: torch.device) -> float:
     return float(visited.unique().numel() / max(1, free.shape[0]))
 
 
-def build_bonus_heatmaps(rep, buf, cfg, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor]:
+def build_bonus_heatmaps(
+    rep, buf, cfg, device: torch.device, env_id: str
+) -> Tuple[torch.Tensor, torch.Tensor]:
     maze_cfg = maze_cfg_from_config(cfg)
     enc_fn = lambda x: rep.encode(x)
     A = build_precision_A_from_buffer(
@@ -112,17 +123,22 @@ def build_bonus_heatmaps(rep, buf, cfg, device: torch.device) -> Tuple[torch.Ten
     Ainv = torch.linalg.inv(A)
 
     # Compute bonus across all free positions and all nuisance phases.
-    free = free_positions(maze_cfg["maze_size"], device)
-    P = int(maze_cfg["periodic_P"])
+    free = free_positions_for_env(env_id, maze_cfg["maze_size"], device)
+    if env_id.startswith("slippery"):
+        K = int(maze_cfg["slippery_D"])
+    elif env_id.startswith("teacup"):
+        K = int(maze_cfg["teacup_P"])
+    else:
+        K = int(maze_cfg["periodic_P"])
     actions = (
         torch.arange(maze_cfg["n_actions"], device=device)
         if cfg.bonus_action_avg
         else torch.zeros((1,), device=device, dtype=torch.long)
     )
 
-    pos_rep = free.repeat_interleave(P, dim=0)
-    phases = torch.arange(P, device=device).repeat(free.shape[0])
-    obs = build_obs_from_pos_phase(pos_rep, phases, maze_cfg["maze_size"], P)
+    pos_rep = free.repeat_interleave(K, dim=0)
+    nuis = torch.arange(K, device=device).repeat(free.shape[0])
+    obs = build_obs_from_pos_nuisance(env_id, pos_rep, nuis, maze_cfg, device)
 
     obs_rep = obs[:, None, :].expand(pos_rep.shape[0], actions.numel(), maze_cfg["obs_dim"]).reshape(
         -1, maze_cfg["obs_dim"]
@@ -132,7 +148,7 @@ def build_bonus_heatmaps(rep, buf, cfg, device: torch.device) -> Tuple[torch.Ten
     b = elliptical_bonus(phi, Ainv, beta=float(cfg.bonus_beta))
     b = b.reshape(pos_rep.shape[0], actions.numel()).mean(dim=1)
 
-    b_fp = b.reshape(free.shape[0], P)
+    b_fp = b.reshape(free.shape[0], K)
     mean = b_fp.mean(dim=1)
     std = b_fp.std(dim=1, unbiased=False)
 
@@ -186,15 +202,20 @@ def symmetric_kl_torch(p: torch.Tensor, q: torch.Tensor, eps: float = 1e-8) -> t
     return 0.5 * (kl_pq + kl_qp)
 
 
-def action_dist_kl_by_position(policy, rep, cfg, device: torch.device) -> torch.Tensor:
+def action_dist_kl_by_position(policy, rep, cfg, device: torch.device, env_id: str) -> torch.Tensor:
     maze_cfg = maze_cfg_from_config(cfg)
-    free = free_positions(maze_cfg["maze_size"], device)
-    P = maze_cfg["periodic_P"]
+    free = free_positions_for_env(env_id, maze_cfg["maze_size"], device)
+    if env_id.startswith("slippery"):
+        K = int(maze_cfg["slippery_D"])
+    elif env_id.startswith("teacup"):
+        K = int(maze_cfg["teacup_P"])
+    else:
+        K = int(maze_cfg["periodic_P"])
 
     obs_list = []
-    for phase in range(P):
-        phase_t = torch.full((free.shape[0],), phase, device=device, dtype=torch.long)
-        obs_list.append(build_obs_from_pos_phase(free, phase_t, maze_cfg["maze_size"], P))
+    for nuis in range(K):
+        nuis_t = torch.full((free.shape[0],), nuis, device=device, dtype=torch.long)
+        obs_list.append(build_obs_from_pos_nuisance(env_id, free, nuis_t, maze_cfg, device))
 
     with torch.no_grad():
         probs_by_phase = []
@@ -207,7 +228,7 @@ def action_dist_kl_by_position(policy, rep, cfg, device: torch.device) -> torch.
         p = probs_by_phase.unsqueeze(2)
         q = probs_by_phase.unsqueeze(1)
         sym = symmetric_kl_torch(p, q)
-        mask = ~torch.eye(P, device=device, dtype=torch.bool)
+        mask = ~torch.eye(K, device=device, dtype=torch.bool)
         sym_off = sym[:, mask].view(sym.shape[0], -1)
         kls = sym_off.mean(dim=1)
 

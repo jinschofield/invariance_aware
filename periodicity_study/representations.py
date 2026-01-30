@@ -39,14 +39,35 @@ class CoordOnlyRep(BaseRepresentation):
         return obs[:, :2]
 
 
-class CoordPhaseRep(BaseRepresentation):
-    def __init__(self, period: int):
+def _decode_slippery_index(obs: torch.Tensor) -> torch.Tensor:
+    return obs[:, 2:5].argmax(dim=1)
+
+
+def _decode_teacup_phase(obs: torch.Tensor, device: torch.device) -> torch.Tensor:
+    feat = obs[:, 2:5]
+    codebook = layouts.TETRA4.to(device)
+    dists = torch.cdist(feat, codebook)
+    idx = dists.argmin(dim=1)
+    zero_mask = feat.abs().sum(dim=1) < 1e-6
+    idx = torch.where(zero_mask, torch.zeros_like(idx), idx)
+    return idx
+
+
+class CoordNuisanceRep(BaseRepresentation):
+    def __init__(self, env_id: str, period: int, device: torch.device):
         super().__init__(name="coord_plus_nuisance", dim=3)
+        self.env_id = env_id
         self.period = int(period)
+        self.device = device
 
     def encode(self, obs: torch.Tensor) -> torch.Tensor:
-        phase_idx = _decode_phase_index(obs, self.period).float().unsqueeze(1)
-        return torch.cat([obs[:, :2], phase_idx], dim=1)
+        if self.env_id.startswith("slippery"):
+            nuis_idx = _decode_slippery_index(obs).float().unsqueeze(1)
+        elif self.env_id.startswith("teacup"):
+            nuis_idx = _decode_teacup_phase(obs, self.device).float().unsqueeze(1)
+        else:
+            nuis_idx = _decode_phase_index(obs, self.period).float().unsqueeze(1)
+        return torch.cat([obs[:, :2], nuis_idx], dim=1)
 
 
 class CRTRRep(BaseRepresentation):

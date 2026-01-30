@@ -1,8 +1,8 @@
 # Periodicity Study (Standalone Subfolder)
 
-This subfolder contains a standalone study focused exclusively on the Periodicity
-environment. It implements three stages of measurement across three
-representation types:
+This subfolder contains a standalone study that runs across multiple environments
+(periodicity, delay action queue, teacup) and large-maze variants. It implements
+three stages of measurement across three representation types:
 
 1) Representation invariance (same position, different nuisance).
 2) Elliptical bonus behavior (fixed position, across nuisance).
@@ -37,7 +37,7 @@ sbatch periodicity_study/slurm/periodicity_study_fast.sbatch
 Notebook path: `periodicity_study/notebooks/periodicity_study_colab.ipynb`
 
 Outputs (figures + CSVs) are written under:
-`periodicity_study/outputs/`
+`periodicity_study/outputs/`, organized by environment (subfolders per env).
 
 ## Online training logs
 

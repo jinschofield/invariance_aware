@@ -10,10 +10,13 @@ class StudyConfig:
     require_cuda: bool = True
 
     maze_size: int = 12
+    maze_size_large: int = 16
     obs_dim: int = 5
     n_actions: int = 4
     max_ep_steps: int = 60
     periodic_P: int = 8
+    slippery_D: int = 3
+    teacup_P: int = 4
     goal: Tuple[int, int] = (10, 10)
 
     offline_num_envs: int = 256

@@ -5,11 +5,9 @@ import torch
 import torch.nn as nn
 from torch.distributions import Categorical
 
-from ti.envs import PeriodicMaze
 from ti.online.intrinsic import EpisodicEllipticalBonus
 from ti.utils import seed_everything
 
-from periodicity_study.common import maze_cfg_from_config
 
 
 class ActorCritic(nn.Module):
@@ -63,6 +61,8 @@ def train_ppo(
     rep,
     cfg,
     device: torch.device,
+    env_ctor,
+    maze_cfg,
     policy_obs_fn=None,
     policy_input_dim: Optional[int] = None,
     rep_updater=None,
@@ -76,9 +76,7 @@ def train_ppo(
     eval_buffer=None,
 ) -> Tuple[ActorCritic, List[Dict[str, float]], List[Dict[str, float]]]:
     seed_everything(int(cfg.seed), deterministic=True)
-    maze_cfg = maze_cfg_from_config(cfg)
-
-    env = PeriodicMaze(
+    env = env_ctor(
         num_envs=cfg.ppo_num_envs,
         maze_size=maze_cfg["maze_size"],
         max_ep_steps=maze_cfg["max_ep_steps"],
