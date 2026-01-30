@@ -37,6 +37,17 @@ python -m periodicity_study.run_study --envs periodicity_large
 python -m periodicity_study.run_study --envs periodicity,slippery
 ```
 
+### Selecting reps and reward mode (PPO only)
+You can run a subset of representation PPO runs and choose reward mode:
+
+```bash
+# Only goal (extrinsic) PPO for learned reps
+python -m periodicity_study.run_study --goal-only --reps crtr_learned,idm_learned,crtr_online_joint,idm_online_joint
+
+# Only intrinsic PPO runs
+python -m periodicity_study.run_study --intrinsic-only
+```
+
 This study is GPU-first and will error if CUDA is not available. Use `--device cuda:0`
 to select a specific GPU.
 

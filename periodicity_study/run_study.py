@@ -278,6 +278,9 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
             cfg, device, model_dir, force_retrain=args.force_retrain, buf=buf, epi=epi
         ),
     }
+    selected_reps = getattr(args, "reps_set", None)
+    if selected_reps is not None:
+        reps = {k: v for k, v in reps.items() if k in selected_reps}
 
     print(f"\n=== {env_name} ({env_id}) ===")
     print("Stage 1: Representation invariance metrics")
@@ -520,8 +523,16 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
                 hline_y=None,
             )
 
+    run_goal = bool(getattr(args, "goal_only", False))
+    run_intrinsic = bool(getattr(args, "intrinsic_only", False))
+    if run_goal and run_intrinsic:
+        raise ValueError("Cannot set both --goal-only and --intrinsic-only.")
+    use_extrinsic_vals = (
+        (True,) if run_goal else ((False,) if run_intrinsic else (False, True))
+    )
+
     for name, rep in reps.items():
-        for use_extrinsic in (False, True):
+        for use_extrinsic in use_extrinsic_vals:
             run_name = name if not use_extrinsic else f"{name}_goal"
             print(f"  Training PPO for {run_name}...")
             eval_buf = OnlineReplayBuffer(cfg.obs_dim, eval_buf_size, cfg.ppo_num_envs, device)
@@ -619,39 +630,47 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         metrics["coverage_percent"] = cov * 100.0 if np.isfinite(cov) else float("nan")
         return metrics
 
-    online_policy, online_logs, metrics_log = train_ppo(
-        online_rep,
-        cfg,
-        device,
-        env_ctor,
-        maze_cfg,
-        policy_obs_fn=policy_obs_fn,
-        policy_input_dim=policy_input_dim,
-        use_extrinsic=False,
-        rep_updater=online_rep.update,
-        rep_buffer=rep_buf,
-        rep_update_every=cfg.online_rep_update_every,
-        rep_update_steps=cfg.online_rep_update_steps,
-        rep_batch_size=cfg.online_rep_batch_size,
-        rep_warmup_steps=cfg.online_rep_warmup_steps,
-        eval_callback=online_eval_cb,
-        eval_every_updates=cfg.online_eval_every_updates,
-        eval_buffer=rep_buf,
-    )
-    policies["crtr_online_joint"] = online_policy
-    torch.save(online_policy.state_dict(), os.path.join(model_dir, "ppo_crtr_online_joint.pt"))
+    if not run_goal:
+        online_policy, online_logs, metrics_log = train_ppo(
+            online_rep,
+            cfg,
+            device,
+            env_ctor,
+            maze_cfg,
+            policy_obs_fn=policy_obs_fn,
+            policy_input_dim=policy_input_dim,
+            use_extrinsic=False,
+            rep_updater=online_rep.update,
+            rep_buffer=rep_buf,
+            rep_update_every=cfg.online_rep_update_every,
+            rep_update_steps=cfg.online_rep_update_steps,
+            rep_batch_size=cfg.online_rep_batch_size,
+            rep_warmup_steps=cfg.online_rep_warmup_steps,
+            eval_callback=online_eval_cb,
+            eval_every_updates=cfg.online_eval_every_updates,
+            eval_buffer=rep_buf,
+        )
+        policies["crtr_online_joint"] = online_policy
+        torch.save(online_policy.state_dict(), os.path.join(model_dir, "ppo_crtr_online_joint.pt"))
 
-    with open(os.path.join(log_dir, "ppo_logs_crtr_online_joint.csv"), "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=online_logs[0].keys())
-        writer.writeheader()
-        writer.writerows(online_logs)
-    _save_timeseries(os.path.join(log_dir, "metrics_timeseries_crtr_online_joint.csv"), metrics_log)
+        with open(
+            os.path.join(log_dir, "ppo_logs_crtr_online_joint.csv"),
+            "w",
+            newline="",
+            encoding="utf-8",
+        ) as f:
+            writer = csv.DictWriter(f, fieldnames=online_logs[0].keys())
+            writer.writeheader()
+            writer.writerows(online_logs)
+        _save_timeseries(
+            os.path.join(log_dir, "metrics_timeseries_crtr_online_joint.csv"), metrics_log
+        )
 
-    coverage_series["crtr_online_joint"] = metrics_log
-    _plot_rep_timeseries("crtr_online_joint", metrics_log)
+        coverage_series["crtr_online_joint"] = metrics_log
+        _plot_rep_timeseries("crtr_online_joint", metrics_log)
 
-    online_rep_goal = init_online_crtr(cfg, device)
-    rep_buf_goal = OnlineReplayBuffer(cfg.obs_dim, rep_buf_size, cfg.ppo_num_envs, device)
+    online_rep_goal = None
+    rep_buf_goal = None
 
     def online_goal_eval_cb(update, env_steps, model, rep=online_rep_goal, eval_buf=rep_buf_goal):
         metrics = _eval_levels(
@@ -663,45 +682,51 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         metrics["coverage_percent"] = cov * 100.0 if np.isfinite(cov) else float("nan")
         return metrics
 
-    online_policy_goal, online_logs_goal, metrics_log_goal = train_ppo(
-        online_rep_goal,
-        cfg,
-        device,
-        env_ctor,
-        maze_cfg,
-        policy_obs_fn=policy_obs_fn,
-        policy_input_dim=policy_input_dim,
-        use_extrinsic=True,
-        rep_updater=online_rep_goal.update,
-        rep_buffer=rep_buf_goal,
-        rep_update_every=cfg.online_rep_update_every,
-        rep_update_steps=cfg.online_rep_update_steps,
-        rep_batch_size=cfg.online_rep_batch_size,
-        rep_warmup_steps=cfg.online_rep_warmup_steps,
-        eval_callback=online_goal_eval_cb,
-        eval_every_updates=cfg.online_eval_every_updates,
-        eval_buffer=rep_buf_goal,
-    )
-    policies["crtr_online_joint_goal"] = online_policy_goal
-    torch.save(
-        online_policy_goal.state_dict(), os.path.join(model_dir, "ppo_crtr_online_joint_goal.pt")
-    )
+    if not run_intrinsic:
+        online_rep_goal = init_online_crtr(cfg, device)
+        rep_buf_goal = OnlineReplayBuffer(cfg.obs_dim, rep_buf_size, cfg.ppo_num_envs, device)
 
-    with open(
-        os.path.join(log_dir, "ppo_logs_crtr_online_joint_goal.csv"),
-        "w",
-        newline="",
-        encoding="utf-8",
-    ) as f:
-        writer = csv.DictWriter(f, fieldnames=online_logs_goal[0].keys())
-        writer.writeheader()
-        writer.writerows(online_logs_goal)
-    _save_timeseries(
-        os.path.join(log_dir, "metrics_timeseries_crtr_online_joint_goal.csv"), metrics_log_goal
-    )
+        online_policy_goal, online_logs_goal, metrics_log_goal = train_ppo(
+            online_rep_goal,
+            cfg,
+            device,
+            env_ctor,
+            maze_cfg,
+            policy_obs_fn=policy_obs_fn,
+            policy_input_dim=policy_input_dim,
+            use_extrinsic=True,
+            rep_updater=online_rep_goal.update,
+            rep_buffer=rep_buf_goal,
+            rep_update_every=cfg.online_rep_update_every,
+            rep_update_steps=cfg.online_rep_update_steps,
+            rep_batch_size=cfg.online_rep_batch_size,
+            rep_warmup_steps=cfg.online_rep_warmup_steps,
+            eval_callback=online_goal_eval_cb,
+            eval_every_updates=cfg.online_eval_every_updates,
+            eval_buffer=rep_buf_goal,
+        )
+        policies["crtr_online_joint_goal"] = online_policy_goal
+        torch.save(
+            online_policy_goal.state_dict(),
+            os.path.join(model_dir, "ppo_crtr_online_joint_goal.pt"),
+        )
 
-    coverage_series_goal["crtr_online_joint_goal"] = metrics_log_goal
-    _plot_rep_timeseries("crtr_online_joint_goal", metrics_log_goal)
+        with open(
+            os.path.join(log_dir, "ppo_logs_crtr_online_joint_goal.csv"),
+            "w",
+            newline="",
+            encoding="utf-8",
+        ) as f:
+            writer = csv.DictWriter(f, fieldnames=online_logs_goal[0].keys())
+            writer.writeheader()
+            writer.writerows(online_logs_goal)
+        _save_timeseries(
+            os.path.join(log_dir, "metrics_timeseries_crtr_online_joint_goal.csv"),
+            metrics_log_goal,
+        )
+
+        coverage_series_goal["crtr_online_joint_goal"] = metrics_log_goal
+        _plot_rep_timeseries("crtr_online_joint_goal", metrics_log_goal)
 
     online_idm = init_online_idm(cfg, device)
     idm_buf = OnlineReplayBuffer(cfg.obs_dim, rep_buf_size, cfg.ppo_num_envs, device)
@@ -716,39 +741,47 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         metrics["coverage_percent"] = cov * 100.0 if np.isfinite(cov) else float("nan")
         return metrics
 
-    idm_policy, idm_logs, idm_metrics_log = train_ppo(
-        online_idm,
-        cfg,
-        device,
-        env_ctor,
-        maze_cfg,
-        policy_obs_fn=policy_obs_fn,
-        policy_input_dim=policy_input_dim,
-        use_extrinsic=False,
-        rep_updater=online_idm.update,
-        rep_buffer=idm_buf,
-        rep_update_every=cfg.online_rep_update_every,
-        rep_update_steps=cfg.online_rep_update_steps,
-        rep_batch_size=cfg.online_rep_batch_size,
-        rep_warmup_steps=cfg.online_rep_warmup_steps,
-        eval_callback=online_idm_eval_cb,
-        eval_every_updates=cfg.online_eval_every_updates,
-        eval_buffer=idm_buf,
-    )
-    policies["idm_online_joint"] = idm_policy
-    torch.save(idm_policy.state_dict(), os.path.join(model_dir, "ppo_idm_online_joint.pt"))
+    if not run_goal:
+        idm_policy, idm_logs, idm_metrics_log = train_ppo(
+            online_idm,
+            cfg,
+            device,
+            env_ctor,
+            maze_cfg,
+            policy_obs_fn=policy_obs_fn,
+            policy_input_dim=policy_input_dim,
+            use_extrinsic=False,
+            rep_updater=online_idm.update,
+            rep_buffer=idm_buf,
+            rep_update_every=cfg.online_rep_update_every,
+            rep_update_steps=cfg.online_rep_update_steps,
+            rep_batch_size=cfg.online_rep_batch_size,
+            rep_warmup_steps=cfg.online_rep_warmup_steps,
+            eval_callback=online_idm_eval_cb,
+            eval_every_updates=cfg.online_eval_every_updates,
+            eval_buffer=idm_buf,
+        )
+        policies["idm_online_joint"] = idm_policy
+        torch.save(idm_policy.state_dict(), os.path.join(model_dir, "ppo_idm_online_joint.pt"))
 
-    with open(os.path.join(log_dir, "ppo_logs_idm_online_joint.csv"), "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=idm_logs[0].keys())
-        writer.writeheader()
-        writer.writerows(idm_logs)
-    _save_timeseries(os.path.join(log_dir, "metrics_timeseries_idm_online_joint.csv"), idm_metrics_log)
+        with open(
+            os.path.join(log_dir, "ppo_logs_idm_online_joint.csv"),
+            "w",
+            newline="",
+            encoding="utf-8",
+        ) as f:
+            writer = csv.DictWriter(f, fieldnames=idm_logs[0].keys())
+            writer.writeheader()
+            writer.writerows(idm_logs)
+        _save_timeseries(
+            os.path.join(log_dir, "metrics_timeseries_idm_online_joint.csv"), idm_metrics_log
+        )
 
-    coverage_series["idm_online_joint"] = idm_metrics_log
-    _plot_rep_timeseries("idm_online_joint", idm_metrics_log)
+        coverage_series["idm_online_joint"] = idm_metrics_log
+        _plot_rep_timeseries("idm_online_joint", idm_metrics_log)
 
-    online_idm_goal = init_online_idm(cfg, device)
-    idm_buf_goal = OnlineReplayBuffer(cfg.obs_dim, rep_buf_size, cfg.ppo_num_envs, device)
+    online_idm_goal = None
+    idm_buf_goal = None
 
     def online_idm_goal_eval_cb(update, env_steps, model, rep=online_idm_goal, eval_buf=idm_buf_goal):
         metrics = _eval_levels(
@@ -760,71 +793,78 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         metrics["coverage_percent"] = cov * 100.0 if np.isfinite(cov) else float("nan")
         return metrics
 
-    idm_policy_goal, idm_logs_goal, idm_metrics_log_goal = train_ppo(
-        online_idm_goal,
-        cfg,
-        device,
-        env_ctor,
-        maze_cfg,
-        policy_obs_fn=policy_obs_fn,
-        policy_input_dim=policy_input_dim,
-        use_extrinsic=True,
-        rep_updater=online_idm_goal.update,
-        rep_buffer=idm_buf_goal,
-        rep_update_every=cfg.online_rep_update_every,
-        rep_update_steps=cfg.online_rep_update_steps,
-        rep_batch_size=cfg.online_rep_batch_size,
-        rep_warmup_steps=cfg.online_rep_warmup_steps,
-        eval_callback=online_idm_goal_eval_cb,
-        eval_every_updates=cfg.online_eval_every_updates,
-        eval_buffer=idm_buf_goal,
-    )
-    policies["idm_online_joint_goal"] = idm_policy_goal
-    torch.save(
-        idm_policy_goal.state_dict(), os.path.join(model_dir, "ppo_idm_online_joint_goal.pt")
-    )
+    if not run_intrinsic:
+        online_idm_goal = init_online_idm(cfg, device)
+        idm_buf_goal = OnlineReplayBuffer(cfg.obs_dim, rep_buf_size, cfg.ppo_num_envs, device)
 
-    with open(
-        os.path.join(log_dir, "ppo_logs_idm_online_joint_goal.csv"),
-        "w",
-        newline="",
-        encoding="utf-8",
-    ) as f:
-        writer = csv.DictWriter(f, fieldnames=idm_logs_goal[0].keys())
-        writer.writeheader()
-        writer.writerows(idm_logs_goal)
-    _save_timeseries(
-        os.path.join(log_dir, "metrics_timeseries_idm_online_joint_goal.csv"),
-        idm_metrics_log_goal,
-    )
+        idm_policy_goal, idm_logs_goal, idm_metrics_log_goal = train_ppo(
+            online_idm_goal,
+            cfg,
+            device,
+            env_ctor,
+            maze_cfg,
+            policy_obs_fn=policy_obs_fn,
+            policy_input_dim=policy_input_dim,
+            use_extrinsic=True,
+            rep_updater=online_idm_goal.update,
+            rep_buffer=idm_buf_goal,
+            rep_update_every=cfg.online_rep_update_every,
+            rep_update_steps=cfg.online_rep_update_steps,
+            rep_batch_size=cfg.online_rep_batch_size,
+            rep_warmup_steps=cfg.online_rep_warmup_steps,
+            eval_callback=online_idm_goal_eval_cb,
+            eval_every_updates=cfg.online_eval_every_updates,
+            eval_buffer=idm_buf_goal,
+        )
+        policies["idm_online_joint_goal"] = idm_policy_goal
+        torch.save(
+            idm_policy_goal.state_dict(),
+            os.path.join(model_dir, "ppo_idm_online_joint_goal.pt"),
+        )
 
-    coverage_series_goal["idm_online_joint_goal"] = idm_metrics_log_goal
-    _plot_rep_timeseries("idm_online_joint_goal", idm_metrics_log_goal)
+        with open(
+            os.path.join(log_dir, "ppo_logs_idm_online_joint_goal.csv"),
+            "w",
+            newline="",
+            encoding="utf-8",
+        ) as f:
+            writer = csv.DictWriter(f, fieldnames=idm_logs_goal[0].keys())
+            writer.writeheader()
+            writer.writerows(idm_logs_goal)
+        _save_timeseries(
+            os.path.join(log_dir, "metrics_timeseries_idm_online_joint_goal.csv"),
+            idm_metrics_log_goal,
+        )
+
+        coverage_series_goal["idm_online_joint_goal"] = idm_metrics_log_goal
+        _plot_rep_timeseries("idm_online_joint_goal", idm_metrics_log_goal)
 
     action_kl_with_online = dict(action_kl)
-    action_kl_with_online["crtr_online_joint"] = action_dist_kl_by_position(
-        online_policy, online_rep, cfg, device, env_id, policy_obs_fn=policy_obs_fn
-    )
-    action_kl_with_online["idm_online_joint"] = action_dist_kl_by_position(
-        idm_policy, online_idm, cfg, device, env_id, policy_obs_fn=policy_obs_fn
-    )
+    if not run_goal:
+        action_kl_with_online["crtr_online_joint"] = action_dist_kl_by_position(
+            online_policy, online_rep, cfg, device, env_id, policy_obs_fn=policy_obs_fn
+        )
+        action_kl_with_online["idm_online_joint"] = action_dist_kl_by_position(
+            idm_policy, online_idm, cfg, device, env_id, policy_obs_fn=policy_obs_fn
+        )
     action_kl_with_online_goal = dict(action_kl_goal)
-    action_kl_with_online_goal["crtr_online_joint_goal"] = action_dist_kl_by_position(
-        online_policy_goal,
-        online_rep_goal,
-        cfg,
-        device,
-        env_id,
-        policy_obs_fn=policy_obs_fn,
-    )
-    action_kl_with_online_goal["idm_online_joint_goal"] = action_dist_kl_by_position(
-        idm_policy_goal,
-        online_idm_goal,
-        cfg,
-        device,
-        env_id,
-        policy_obs_fn=policy_obs_fn,
-    )
+    if not run_intrinsic:
+        action_kl_with_online_goal["crtr_online_joint_goal"] = action_dist_kl_by_position(
+            online_policy_goal,
+            online_rep_goal,
+            cfg,
+            device,
+            env_id,
+            policy_obs_fn=policy_obs_fn,
+        )
+        action_kl_with_online_goal["idm_online_joint_goal"] = action_dist_kl_by_position(
+            idm_policy_goal,
+            online_idm_goal,
+            cfg,
+            device,
+            env_id,
+            policy_obs_fn=policy_obs_fn,
+        )
 
     _plot_ppo_summary(
         coverage_series,
@@ -961,6 +1001,18 @@ def main():
     )
     parser.add_argument("--only-large", action="store_true", help="Run only *_large envs.")
     parser.add_argument("--only-small", action="store_true", help="Run only base (non-_large) envs.")
+    parser.add_argument(
+        "--reps",
+        default=None,
+        help=(
+            "Comma-separated reps to run for PPO: "
+            "coord_only,coord_plus_nuisance,crtr_learned,idm_learned,crtr_online_joint,idm_online_joint"
+        ),
+    )
+    parser.add_argument("--goal-only", action="store_true", help="Run only goal (extrinsic) PPO.")
+    parser.add_argument(
+        "--intrinsic-only", action="store_true", help="Run only intrinsic-only PPO."
+    )
     args = parser.parse_args()
 
     base_cfg = StudyConfig()
@@ -1002,6 +1054,23 @@ def main():
             raise ValueError(f"Unknown env ids: {sorted(missing)}. Known: {known}")
     if not env_specs:
         raise ValueError("No environments selected. Check --envs/--only-large/--only-small.")
+
+    args.reps_set = None
+    if args.reps:
+        requested = {s.strip() for s in args.reps.split(",") if s.strip()}
+        known_reps = {
+            "coord_only",
+            "coord_plus_nuisance",
+            "crtr_learned",
+            "idm_learned",
+            "crtr_online_joint",
+            "idm_online_joint",
+        }
+        missing = requested - known_reps
+        if missing:
+            known = ", ".join(sorted(known_reps))
+            raise ValueError(f"Unknown reps: {sorted(missing)}. Known: {known}")
+        args.reps_set = requested
 
     for env_spec in env_specs:
         cfg = copy.deepcopy(base_cfg)
