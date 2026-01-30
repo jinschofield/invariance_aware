@@ -63,6 +63,12 @@ def _pearsonr(a: torch.Tensor, b: torch.Tensor) -> Tuple[float, float]:
     return float(r.item()), float(p.item())
 
 
+def _obs_to_pos(obs: torch.Tensor, maze_size: int) -> torch.Tensor:
+    xy = obs[:, :2]
+    pos = torch.round(((xy + 1.0) * 0.5) * float(maze_size - 1)).long()
+    return pos.clamp(0, maze_size - 1)
+
+
 def rep_invariance_by_position(rep, cfg, device: torch.device) -> torch.Tensor:
     maze_cfg = maze_cfg_from_config(cfg)
     free = free_positions(maze_cfg["maze_size"], device)
@@ -78,6 +84,18 @@ def rep_invariance_by_position(rep, cfg, device: torch.device) -> torch.Tensor:
     mask = ~torch.eye(P, device=device, dtype=torch.bool)
     d_off = d[:, mask].reshape(free.shape[0], -1)
     return d_off.mean(dim=1)
+
+
+def coverage_from_buffer(buf, cfg, device: torch.device) -> float:
+    if buf is None or buf.size <= 0:
+        return float("nan")
+    maze_cfg = maze_cfg_from_config(cfg)
+    free = free_positions(maze_cfg["maze_size"], device)
+    obs = buf.s[: buf.size]
+    pos = _obs_to_pos(obs, maze_cfg["maze_size"])
+    maze_size = int(maze_cfg["maze_size"])
+    visited = pos[:, 0] * maze_size + pos[:, 1]
+    return float(visited.unique().numel() / max(1, free.shape[0]))
 
 
 def build_bonus_heatmaps(rep, buf, cfg, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor]:

@@ -71,6 +71,8 @@ def plot_heatmap(
     fig, ax = plt.subplots(figsize=(5, 4))
     im = ax.imshow(data, cmap=cmap)
     ax.set_title(title)
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
     fig.colorbar(im, ax=ax, shrink=0.8)
     _format_x_ticks(ax)
     fig.tight_layout()
@@ -94,6 +96,8 @@ def plot_heatmap_diff(
     fig, ax = plt.subplots(figsize=(5, 4))
     im = ax.imshow(data, cmap="coolwarm", vmin=-vmax, vmax=vmax)
     ax.set_title(title)
+    ax.set_xlabel("x")
+    ax.set_ylabel("y")
     fig.colorbar(im, ax=ax, shrink=0.8)
     _format_x_ticks(ax)
     fig.tight_layout()
@@ -124,6 +128,7 @@ def plot_timeseries(
         ax.plot(x, y, marker="o", markersize=3)
         ax.set_title(label)
         ax.set_xlabel(x_key)
+        ax.set_ylabel(label)
         ax.grid(alpha=0.3)
         _format_x_ticks(ax)
 
@@ -134,6 +139,33 @@ def plot_timeseries(
         ax.label_outer()
 
     fig.suptitle(title)
+    fig.tight_layout()
+    fig.savefig(out_path)
+    plt.close(fig)
+
+
+def plot_multi_timeseries(
+    series_by_rep: Dict[str, Iterable[Dict[str, float]]],
+    title: str,
+    out_path: str,
+    y_key: str,
+    y_label: str,
+    x_key: str = "env_steps",
+):
+    fig, ax = plt.subplots(figsize=(7, 4))
+    for name, rows in series_by_rep.items():
+        rows = list(rows)
+        if not rows:
+            continue
+        x = [float(row.get(x_key, row.get("update", 0))) for row in rows]
+        y = [float(row.get(y_key, float("nan"))) for row in rows]
+        ax.plot(x, y, marker="o", markersize=3, label=name)
+    ax.set_title(title)
+    ax.set_xlabel(x_key)
+    ax.set_ylabel(y_label)
+    ax.axhline(1.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
+    ax.grid(alpha=0.3)
+    ax.legend()
     fig.tight_layout()
     fig.savefig(out_path)
     plt.close(fig)

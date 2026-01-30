@@ -60,6 +60,17 @@ class CRTRRep(BaseRepresentation):
             return self.encoder(obs)
 
 
+class IDMRep(BaseRepresentation):
+    def __init__(self, encoder: torch.nn.Module, dim: int):
+        super().__init__(name="idm_learned", dim=int(dim))
+        self.encoder = encoder
+        self.encoder.eval()
+
+    def encode(self, obs: torch.Tensor) -> torch.Tensor:
+        with torch.no_grad():
+            return self.encoder(obs)
+
+
 class OnlineCRTRRep(BaseRepresentation):
     def __init__(self, learner: OfflineRepLearner, dim: int, device: torch.device):
         super().__init__(name="crtr_online_joint", dim=int(dim))
@@ -156,6 +167,77 @@ def train_or_load_crtr(
 
     torch.save({"encoder": learner.rep_enc.state_dict()}, model_path)
     return CRTRRep(learner.rep_enc, dim=cfg.z_dim)
+
+
+def train_or_load_idm(
+    cfg,
+    device: torch.device,
+    cache_dir: str,
+    force_retrain: bool = False,
+    buf=None,
+    epi=None,
+) -> IDMRep:
+    ensure_dir(cache_dir)
+    model_path = os.path.join(cache_dir, "idm_rep.pt")
+
+    if os.path.exists(model_path) and not force_retrain:
+        payload = torch.load(model_path, map_location=device)
+        encoder = OfflineRepLearner(
+            "IDM",
+            obs_dim=cfg.obs_dim,
+            z_dim=cfg.z_dim,
+            hidden_dim=cfg.hidden_dim,
+            n_actions=cfg.n_actions,
+            crtr_temp=cfg.crtr_temp,
+            crtr_rep=cfg.crtr_rep_factor,
+            k_cap=cfg.k_cap,
+            geom_p=cfg.geom_p,
+            device=device,
+            lr=cfg.lr,
+        ).rep_enc.to(device)
+        encoder.load_state_dict(payload["encoder"])
+        return IDMRep(encoder, dim=cfg.z_dim)
+
+    seed_everything(int(cfg.seed), deterministic=True)
+    maze_cfg = maze_cfg_from_config(cfg)
+    if buf is None:
+        buf, _ = collect_offline_dataset(
+            PeriodicMaze,
+            cfg.offline_collect_steps,
+            cfg.offline_num_envs,
+            maze_cfg,
+            device,
+        )
+    if epi is None:
+        epi = build_episode_index_strided(buf.timestep, buf.size, cfg.offline_num_envs, device)
+
+    learner = OfflineRepLearner(
+        "IDM",
+        obs_dim=cfg.obs_dim,
+        z_dim=cfg.z_dim,
+        hidden_dim=cfg.hidden_dim,
+        n_actions=cfg.n_actions,
+        crtr_temp=cfg.crtr_temp,
+        crtr_rep=cfg.crtr_rep_factor,
+        k_cap=cfg.k_cap,
+        geom_p=cfg.geom_p,
+        device=device,
+        lr=cfg.lr,
+    ).to(device)
+
+    learner.train_steps(
+        buf,
+        epi,
+        cfg.offline_train_steps,
+        cfg.offline_batch_size,
+        cfg.print_train_every,
+        use_amp=False,
+        amp_dtype="bf16",
+        resume=False,
+    )
+
+    torch.save({"encoder": learner.rep_enc.state_dict()}, model_path)
+    return IDMRep(learner.rep_enc, dim=cfg.z_dim)
 
 
 def init_online_crtr(cfg, device: torch.device) -> OnlineCRTRRep:

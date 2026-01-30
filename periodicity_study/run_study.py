@@ -23,17 +23,25 @@ from periodicity_study.metrics import (
     action_dist_kl_by_position,
     bonus_metrics_from_heatmaps,
     build_bonus_heatmaps,
+    coverage_from_buffer,
     heatmap_similarity_metrics,
     pairwise_ttests,
     rep_invariance_by_position,
 )
-from periodicity_study.plotting import plot_bar, plot_heatmap, plot_heatmap_diff, plot_timeseries
+from periodicity_study.plotting import (
+    plot_bar,
+    plot_heatmap,
+    plot_heatmap_diff,
+    plot_timeseries,
+    plot_multi_timeseries,
+)
 from periodicity_study.ppo import train_ppo
 from periodicity_study.representations import (
     CoordOnlyRep,
     CoordPhaseRep,
     init_online_crtr,
     train_or_load_crtr,
+    train_or_load_idm,
 )
 
 
@@ -92,12 +100,14 @@ def _eval_levels(rep, policy, cfg, device: torch.device, eval_buf) -> Dict[str, 
     bonus_within_std = float("nan")
     bonus_between_std = float("nan")
     bonus_within_over_between = float("nan")
+    coverage_frac = float("nan")
     if eval_buf is not None and eval_buf.size >= int(cfg.online_eval_min_buffer):
         h_mean, h_std = build_bonus_heatmaps(rep, eval_buf, cfg, device)
         bonus_metrics = bonus_metrics_from_heatmaps(h_mean, h_std)
         bonus_within_std = bonus_metrics["within_std_mean"]
         bonus_between_std = bonus_metrics["between_std"]
         bonus_within_over_between = bonus_metrics["within_over_between"]
+        coverage_frac = coverage_from_buffer(eval_buf, cfg, device)
 
     action_vals = action_dist_kl_by_position(policy, rep, cfg, device)
     action_mean = float(action_vals.mean().item())
@@ -109,6 +119,7 @@ def _eval_levels(rep, policy, cfg, device: torch.device, eval_buf) -> Dict[str, 
         "bonus_within_std_mean": bonus_within_std,
         "bonus_between_std": bonus_between_std,
         "bonus_within_over_between": bonus_within_over_between,
+        "coverage_fraction": coverage_frac,
         "action_kl_mean": action_mean,
         "action_kl_std": action_std,
     }
@@ -166,6 +177,9 @@ def main():
         "coord_only": CoordOnlyRep(),
         "coord_plus_nuisance": CoordPhaseRep(cfg.periodic_P),
         "crtr_learned": train_or_load_crtr(
+            cfg, device, model_dir, force_retrain=args.force_retrain, buf=buf, epi=epi
+        ),
+        "idm_learned": train_or_load_idm(
             cfg, device, model_dir, force_retrain=args.force_retrain, buf=buf, epi=epi
         ),
     }
@@ -283,6 +297,7 @@ def main():
     print("Stage 3: PPO action distribution invariance (bonus-only)")
     action_kl = {}
     policies = {}
+    coverage_series = {}
     eval_buf_size = int(cfg.online_eval_buffer_size)
     if eval_buf_size <= 0:
         eval_buf_size = int(cfg.ppo_total_steps) * int(cfg.ppo_num_envs)
@@ -312,6 +327,7 @@ def main():
             writer.writeheader()
             writer.writerows(logs)
         _save_timeseries(os.path.join(log_dir, f"metrics_timeseries_{name}.csv"), metrics_log)
+        coverage_series[name] = metrics_log
 
         metrics_to_plot = {
             "rep_invariance_mean": "Rep invariance (mean ||z1 - z2||)",
@@ -343,6 +359,14 @@ def main():
             )
 
         action_kl[name] = action_dist_kl_by_position(policy, rep, cfg, device)
+
+    plot_multi_timeseries(
+        coverage_series,
+        title="PPO coverage over time (full state coverage)",
+        out_path=os.path.join(fig_dir, "ppo_coverage_over_time.png"),
+        y_key="coverage_fraction",
+        y_label="Coverage fraction",
+    )
 
     action_kl_p = pairwise_ttests(action_kl)
     plot_bar(
@@ -389,6 +413,15 @@ def main():
         writer.writeheader()
         writer.writerows(online_logs)
     _save_timeseries(os.path.join(log_dir, "metrics_timeseries_crtr_online_joint.csv"), metrics_log)
+
+    coverage_series["crtr_online_joint"] = metrics_log
+    plot_multi_timeseries(
+        coverage_series,
+        title="PPO coverage over time (incl. online CRTR)",
+        out_path=os.path.join(fig_dir, "ppo_coverage_over_time_with_online.png"),
+        y_key="coverage_fraction",
+        y_label="Coverage fraction",
+    )
 
     plot_timeseries(
         metrics_log,

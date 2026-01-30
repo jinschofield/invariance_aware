@@ -12,6 +12,7 @@ Representations evaluated:
 - Coord-only (normalized x,y).
 - Coord + nuisance (x,y + phase index).
 - CRTR learned representation (offline-trained).
+- IDM learned representation (offline-trained).
 - CRTR learned representation (online joint training with PPO + bonus).
 
 ## Quick start
