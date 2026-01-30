@@ -460,6 +460,9 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         coverage_title: str,
         coverage_ratio_title: str,
         action_kl_title: str,
+        success_plot: str | None = None,
+        success_time_plot: str | None = None,
+        success_values: str | None = None,
     ) -> None:
         if not coverage_data:
             return
@@ -519,6 +522,32 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
                 out_path=os.path.join(fig_dir, f"timeseries_compare_{key}{compare_suffix}.png"),
                 y_key=key,
                 y_label=label,
+                x_key="env_steps",
+                hline_y=None,
+            )
+
+        if success_plot and success_time_plot and success_values:
+            success_means = {}
+            for name, rows in coverage_data.items():
+                vals = [
+                    float(row.get("success_rate", float("nan")))
+                    for row in rows
+                    if np.isfinite(float(row.get("success_rate", float("nan"))))
+                ]
+                success_means[name] = float(np.mean(vals)) if vals else float("nan")
+            plot_bar_values(
+                success_means,
+                title=_with_env_title(f"Success rate by method{title_suffix}", env_label),
+                ylabel="Success rate",
+                out_path=os.path.join(fig_dir, f"{success_plot}.png"),
+            )
+            _save_kv(os.path.join(table_dir, f"{success_values}.csv"), success_means)
+            plot_multi_timeseries(
+                coverage_data,
+                title=_with_env_title(f"Success rate over time (all reps){title_suffix}", env_label),
+                out_path=os.path.join(fig_dir, f"{success_time_plot}.png"),
+                y_key="success_rate",
+                y_label="Success rate",
                 x_key="env_steps",
                 hline_y=None,
             )
@@ -611,6 +640,9 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         coverage_title="PPO coverage over time (full state coverage)",
         coverage_ratio_title="PPO coverage time ratios (steps per state)",
         action_kl_title="State-conditioned action distribution change across nuisance",
+        success_plot="ppo_success_rate_by_rep_goal",
+        success_time_plot="ppo_success_rate_over_time_goal",
+        success_values="ppo_success_rate_values_goal",
     )
 
     print("Stage 4: Online joint representations + bonus + PPO")
@@ -891,6 +923,9 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         coverage_title="PPO coverage over time (incl. online CRTR/IDM)",
         coverage_ratio_title="PPO coverage time ratios (incl. online)",
         action_kl_title="Action KL across nuisance (incl. online joint)",
+        success_plot="ppo_success_rate_by_rep_with_online_goal",
+        success_time_plot="ppo_success_rate_over_time_with_online_goal",
+        success_values="ppo_success_rate_values_with_online_goal",
     )
 
     # Final metrics including online joint representation

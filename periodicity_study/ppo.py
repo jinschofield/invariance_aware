@@ -238,6 +238,10 @@ def train_ppo(
         else:
             alpha = 1.0
 
+        success_rate = float("nan")
+        if use_extrinsic:
+            success_rate = float((rewards_ext_buf > 0).any(dim=0).float().mean().item())
+
         if alpha_mask_buf is None:
             alpha_t = alpha
         else:
@@ -321,10 +325,15 @@ def train_ppo(
                 "alpha": float(alpha),
                 "p_succ_hat": float(p_succ_hat),
                 "int_sigma": float(int_sigma),
+                "success_rate": float(success_rate),
             }
         )
 
         if eval_callback is not None and (update == 1 or update % eval_every_updates == 0 or update == updates):
-            metrics_log.append(eval_callback(update, env_steps, model))
+            metrics = eval_callback(update, env_steps, model)
+            if use_extrinsic:
+                metrics["success_rate"] = float(success_rate)
+                metrics["p_succ_hat"] = float(p_succ_hat)
+            metrics_log.append(metrics)
 
     return model, logs, metrics_log
