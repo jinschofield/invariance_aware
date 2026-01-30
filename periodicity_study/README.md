@@ -22,6 +22,21 @@ Representations evaluated:
 python -m periodicity_study.run_study
 ```
 
+### Selecting environments
+You can filter which environments run:
+
+```bash
+# Only large mazes
+python -m periodicity_study.run_study --only-large
+
+# Only base (small) mazes
+python -m periodicity_study.run_study --only-small
+
+# Specific env ids (comma-separated)
+python -m periodicity_study.run_study --envs periodicity_large
+python -m periodicity_study.run_study --envs periodicity,slippery
+```
+
 This study is GPU-first and will error if CUDA is not available. Use `--device cuda:0`
 to select a specific GPU.
 

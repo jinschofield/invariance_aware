@@ -27,4 +27,5 @@ fi
 
 export CUDA_VISIBLE_DEVICES=0
 
-python -m periodicity_study.run_study --device cuda:0
+STUDY_ARGS=${STUDY_ARGS:-""}
+python -m periodicity_study.run_study --device cuda:0 ${STUDY_ARGS}
