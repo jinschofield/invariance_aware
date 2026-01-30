@@ -18,7 +18,7 @@ from ti.envs import PeriodicMaze, SlipperyDelayMaze, TeacupMaze
 from ti.online.buffer import OnlineReplayBuffer
 from ti.utils import configure_torch, seed_everything
 
-from periodicity_study.common import ensure_dir, maze_cfg_from_config
+from periodicity_study.common import ensure_dir, free_positions_for_env, maze_cfg_from_config
 from periodicity_study.config import StudyConfig
 from periodicity_study.metrics import (
     action_dist_kl_by_position,
@@ -31,6 +31,7 @@ from periodicity_study.metrics import (
 )
 from periodicity_study.plotting import (
     plot_bar,
+    plot_bar_values,
     plot_heatmap,
     plot_heatmap_diff,
     plot_timeseries,
@@ -92,6 +93,35 @@ def _save_timeseries(path: str, rows: list[dict]) -> None:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
+
+
+def _coverage_time(metrics_log: list[dict], threshold: float) -> tuple[float, float]:
+    if not metrics_log:
+        return float("nan"), float("nan")
+    for row in metrics_log:
+        cov = float(row.get("coverage_fraction", float("nan")))
+        if cov >= threshold:
+            return float(row.get("env_steps", float("nan"))), float(
+                row.get("steps_per_state", float("nan"))
+            )
+    last = metrics_log[-1]
+    return float(last.get("env_steps", float("nan"))), float(
+        last.get("steps_per_state", float("nan"))
+    )
+
+
+def _pairwise_ratios(values: dict) -> dict:
+    keys = list(values.keys())
+    out = {}
+    for i in range(len(keys)):
+        for j in range(i + 1, len(keys)):
+            a = float(values[keys[i]])
+            b = float(values[keys[j]])
+            if not np.isfinite(a) or not np.isfinite(b) or b == 0.0:
+                out[f"{keys[i]}_over_{keys[j]}"] = float("nan")
+            else:
+                out[f"{keys[i]}_over_{keys[j]}"] = a / b
+    return out
 
 
 def _eval_levels(rep, policy, cfg, device: torch.device, eval_buf, env_id: str) -> Dict[str, float]:
@@ -208,6 +238,7 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
     ensure_dir(log_dir)
 
     maze_cfg = maze_cfg_from_config(cfg)
+    free_count = int(free_positions_for_env(env_id, maze_cfg["maze_size"], device).shape[0])
     buf, _ = collect_offline_dataset(
         env_ctor,
         cfg.offline_collect_steps,
@@ -361,6 +392,9 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         def eval_cb(update, env_steps, model, rep=rep, eval_buf=eval_buf):
             metrics = _eval_levels(rep, model, cfg, device, eval_buf, env_id)
             metrics.update({"update": int(update), "env_steps": int(env_steps)})
+            metrics["steps_per_state"] = float(env_steps) / max(1, free_count)
+            cov = float(metrics.get("coverage_fraction", float("nan")))
+            metrics["coverage_percent"] = cov * 100.0 if np.isfinite(cov) else float("nan")
             return metrics
 
         policy, logs, metrics_log = train_ppo(
@@ -425,8 +459,30 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         coverage_series,
         title="PPO coverage over time (full state coverage)",
         out_path=os.path.join(fig_dir, "ppo_coverage_over_time.png"),
-        y_key="coverage_fraction",
-        y_label="Coverage fraction",
+        y_key="coverage_percent",
+        y_label="Coverage (%)",
+        x_key="steps_per_state",
+        x_label="Steps per free state",
+    )
+
+    coverage_threshold = float(getattr(cfg, "coverage_threshold", 0.99))
+    coverage_steps = {}
+    coverage_steps_per_state = {}
+    for name, log in coverage_series.items():
+        steps, steps_per_state = _coverage_time(log, coverage_threshold)
+        coverage_steps[name] = steps
+        coverage_steps_per_state[name] = steps_per_state
+    _save_kv(os.path.join(table_dir, "ppo_coverage_time_steps.csv"), coverage_steps)
+    _save_kv(
+        os.path.join(table_dir, "ppo_coverage_time_steps_per_state.csv"), coverage_steps_per_state
+    )
+    coverage_ratios = _pairwise_ratios(coverage_steps_per_state)
+    _save_kv(os.path.join(table_dir, "ppo_coverage_time_ratios.csv"), coverage_ratios)
+    plot_bar_values(
+        coverage_ratios,
+        title="PPO coverage time ratios (steps per state)",
+        ylabel="Steps-per-state ratio",
+        out_path=os.path.join(fig_dir, "ppo_coverage_time_ratios.png"),
     )
 
     action_kl_p = pairwise_ttests(action_kl)
@@ -450,6 +506,9 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
     def online_eval_cb(update, env_steps, model, rep=online_rep, eval_buf=rep_buf):
         metrics = _eval_levels(rep, model, cfg, device, eval_buf, env_id)
         metrics.update({"update": int(update), "env_steps": int(env_steps)})
+        metrics["steps_per_state"] = float(env_steps) / max(1, free_count)
+        cov = float(metrics.get("coverage_fraction", float("nan")))
+        metrics["coverage_percent"] = cov * 100.0 if np.isfinite(cov) else float("nan")
         return metrics
 
     online_policy, online_logs, metrics_log = train_ppo(
@@ -497,6 +556,9 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
     def online_idm_eval_cb(update, env_steps, model, rep=online_idm, eval_buf=idm_buf):
         metrics = _eval_levels(rep, model, cfg, device, eval_buf, env_id)
         metrics.update({"update": int(update), "env_steps": int(env_steps)})
+        metrics["steps_per_state"] = float(env_steps) / max(1, free_count)
+        cov = float(metrics.get("coverage_fraction", float("nan")))
+        metrics["coverage_percent"] = cov * 100.0 if np.isfinite(cov) else float("nan")
         return metrics
 
     idm_policy, idm_logs, idm_metrics_log = train_ppo(
@@ -529,8 +591,34 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         coverage_series,
         title="PPO coverage over time (incl. online CRTR/IDM)",
         out_path=os.path.join(fig_dir, "ppo_coverage_over_time_with_online.png"),
-        y_key="coverage_fraction",
-        y_label="Coverage fraction",
+        y_key="coverage_percent",
+        y_label="Coverage (%)",
+        x_key="steps_per_state",
+        x_label="Steps per free state",
+    )
+
+    coverage_steps = {}
+    coverage_steps_per_state = {}
+    for name, log in coverage_series.items():
+        steps, steps_per_state = _coverage_time(log, coverage_threshold)
+        coverage_steps[name] = steps
+        coverage_steps_per_state[name] = steps_per_state
+    _save_kv(
+        os.path.join(table_dir, "ppo_coverage_time_steps_with_online.csv"), coverage_steps
+    )
+    _save_kv(
+        os.path.join(table_dir, "ppo_coverage_time_steps_per_state_with_online.csv"),
+        coverage_steps_per_state,
+    )
+    coverage_ratios = _pairwise_ratios(coverage_steps_per_state)
+    _save_kv(
+        os.path.join(table_dir, "ppo_coverage_time_ratios_with_online.csv"), coverage_ratios
+    )
+    plot_bar_values(
+        coverage_ratios,
+        title="PPO coverage time ratios (incl. online)",
+        ylabel="Steps-per-state ratio",
+        out_path=os.path.join(fig_dir, "ppo_coverage_time_ratios_with_online.png"),
     )
 
     plot_timeseries(

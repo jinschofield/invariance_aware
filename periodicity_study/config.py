@@ -45,6 +45,7 @@ class StudyConfig:
     online_eval_every_updates: int = 5
     online_eval_min_buffer: int = 512
     online_eval_buffer_size: int = 1000000
+    coverage_threshold: float = 0.99
 
     online_rep_update_every: int = 2048
     online_rep_update_steps: int = 1

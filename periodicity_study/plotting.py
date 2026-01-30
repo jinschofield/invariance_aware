@@ -58,6 +58,27 @@ def plot_bar(
     plt.close(fig)
 
 
+def plot_bar_values(
+    values_by_label: Dict[str, float],
+    title: str,
+    ylabel: str,
+    out_path: str,
+):
+    labels = list(values_by_label.keys())
+    values = [float(values_by_label[k]) for k in labels]
+
+    fig, ax = plt.subplots(figsize=(7, 4))
+    ax.bar(labels, values)
+    ax.set_title(title)
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel("Comparison")
+    ax.grid(axis="y", alpha=0.3)
+    _format_x_ticks(ax)
+    fig.tight_layout()
+    fig.savefig(out_path)
+    plt.close(fig)
+
+
 def plot_heatmap(
     heatmap: torch.Tensor,
     title: str,
@@ -151,6 +172,7 @@ def plot_multi_timeseries(
     y_key: str,
     y_label: str,
     x_key: str = "env_steps",
+    x_label: Optional[str] = None,
 ):
     fig, ax = plt.subplots(figsize=(7, 4))
     for name, rows in series_by_rep.items():
@@ -161,7 +183,7 @@ def plot_multi_timeseries(
         y = [float(row.get(y_key, float("nan"))) for row in rows]
         ax.plot(x, y, marker="o", markersize=3, label=name)
     ax.set_title(title)
-    ax.set_xlabel(x_key)
+    ax.set_xlabel(x_label or x_key)
     ax.set_ylabel(y_label)
     ax.axhline(1.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
     ax.grid(alpha=0.3)
