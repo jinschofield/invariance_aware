@@ -394,127 +394,213 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
     action_kl = {}
     policies = {}
     coverage_series = {}
+    coverage_series_goal = {}
+    action_kl_goal = {}
     eval_buf_size = int(cfg.online_eval_buffer_size)
     if eval_buf_size <= 0:
         eval_buf_size = int(cfg.ppo_total_steps) * int(cfg.ppo_num_envs)
 
+    metrics_to_plot = {
+        "rep_invariance_mean": "Rep invariance (mean ||z1 - z2||)",
+        "bonus_within_std_mean": "Bonus within-state std",
+        "bonus_between_std": "Bonus between-state std",
+        "bonus_within_over_between": "Bonus within/between ratio",
+        "action_kl_mean": "Action KL mean",
+    }
+    timeseries_meta = {
+        "crtr_learned": ("timeseries_crtr_fixed", "CRTR fixed (offline) metrics over training"),
+        "idm_learned": ("timeseries_idm", "IDM (offline) PPO metrics over training"),
+        "coord_only": ("timeseries_coord_only", "Coord-only (xy) PPO metrics over training"),
+        "coord_plus_nuisance": (
+            "timeseries_coord_plus_nuisance",
+            "Coord + nuisance (xy + phase) PPO metrics over training",
+        ),
+        "crtr_online_joint": ("timeseries_crtr_online", "CRTR online (joint) metrics over training"),
+        "idm_online_joint": ("timeseries_idm_online", "IDM online (joint) metrics over training"),
+    }
+
+    def _plot_rep_timeseries(rep_name: str, metrics_log: list[dict]) -> None:
+        base = rep_name.replace("_goal", "")
+        if base not in timeseries_meta:
+            return
+        fname, title = timeseries_meta[base]
+        if rep_name.endswith("_goal"):
+            fname = f"{fname}_goal"
+            title = f"{title} + goal"
+        plot_timeseries(
+            metrics_log,
+            title=_with_env_title(title, env_label),
+            out_path=os.path.join(fig_dir, f"{fname}.png"),
+            metrics=metrics_to_plot,
+        )
+
+    compare_metrics = {
+        "rep_invariance_mean": "Rep invariance (mean ||z1 - z2||)",
+        "bonus_within_std_mean": "Bonus within-state std",
+        "bonus_between_std": "Bonus between-state std",
+        "bonus_within_over_between": "Bonus within/between ratio",
+        "action_kl_mean": "Action KL mean",
+    }
+
+    def _plot_ppo_summary(
+        coverage_data: dict,
+        action_kl_data: dict,
+        coverage_plot: str,
+        coverage_time_steps: str,
+        coverage_time_steps_per_state: str,
+        coverage_time_ratios: str,
+        action_kl_plot: str,
+        action_kl_values: str,
+        action_kl_pvalues: str,
+        compare_suffix: str,
+        title_suffix: str,
+        coverage_title: str,
+        coverage_ratio_title: str,
+        action_kl_title: str,
+    ) -> None:
+        if not coverage_data:
+            return
+        plot_multi_timeseries(
+            coverage_data,
+            title=_with_env_title(f"{coverage_title}{title_suffix}", env_label),
+            out_path=os.path.join(fig_dir, f"{coverage_plot}.png"),
+            y_key="coverage_percent",
+            y_label="Coverage (%)",
+            x_key="steps_per_state",
+            x_label="Steps per free state",
+            hline_y=100.0,
+        )
+
+        coverage_threshold = float(getattr(cfg, "coverage_threshold", 0.99))
+        coverage_steps = {}
+        coverage_steps_per_state = {}
+        for name, log in coverage_data.items():
+            steps, steps_per_state = _coverage_time(log, coverage_threshold)
+            coverage_steps[name] = steps
+            coverage_steps_per_state[name] = steps_per_state
+        _save_kv(os.path.join(table_dir, f"{coverage_time_steps}.csv"), coverage_steps)
+        _save_kv(
+            os.path.join(table_dir, f"{coverage_time_steps_per_state}.csv"),
+            coverage_steps_per_state,
+        )
+        coverage_ratios = _pairwise_ratios(coverage_steps_per_state)
+        _save_kv(os.path.join(table_dir, f"{coverage_time_ratios}.csv"), coverage_ratios)
+        plot_bar_values(
+            coverage_ratios,
+            title=_with_env_title(f"{coverage_ratio_title}{title_suffix}", env_label),
+            ylabel="Steps-per-state ratio",
+            out_path=os.path.join(fig_dir, f"{coverage_time_ratios}.png"),
+        )
+
+        if action_kl_data:
+            action_kl_p = pairwise_ttests(action_kl_data)
+            plot_bar(
+                action_kl_data,
+                title=_with_env_title(f"{action_kl_title}{title_suffix}", env_label),
+                ylabel="Mean symmetric KL across nuisance",
+                out_path=os.path.join(fig_dir, f"{action_kl_plot}.png"),
+                p_values=action_kl_p,
+            )
+            _save_metric_values(
+                os.path.join(table_dir, f"{action_kl_values}.csv"), action_kl_data
+            )
+            _save_kv(
+                os.path.join(table_dir, f"{action_kl_pvalues}.csv"),
+                action_kl_p,
+            )
+
+        for key, label in compare_metrics.items():
+            plot_multi_timeseries(
+                coverage_data,
+                title=_with_env_title(f"PPO {label} over time (all reps){title_suffix}", env_label),
+                out_path=os.path.join(fig_dir, f"timeseries_compare_{key}{compare_suffix}.png"),
+                y_key=key,
+                y_label=label,
+                x_key="env_steps",
+                hline_y=None,
+            )
+
     for name, rep in reps.items():
-        print(f"  Training PPO for {name}...")
-        eval_buf = OnlineReplayBuffer(cfg.obs_dim, eval_buf_size, cfg.ppo_num_envs, device)
+        for use_extrinsic in (False, True):
+            run_name = name if not use_extrinsic else f"{name}_goal"
+            print(f"  Training PPO for {run_name}...")
+            eval_buf = OnlineReplayBuffer(cfg.obs_dim, eval_buf_size, cfg.ppo_num_envs, device)
 
-        def eval_cb(update, env_steps, model, rep=rep, eval_buf=eval_buf):
-            metrics = _eval_levels(
-                rep, model, cfg, device, eval_buf, env_id, policy_obs_fn=policy_obs_fn
+            def eval_cb(update, env_steps, model, rep=rep, eval_buf=eval_buf):
+                metrics = _eval_levels(
+                    rep, model, cfg, device, eval_buf, env_id, policy_obs_fn=policy_obs_fn
+                )
+                metrics.update({"update": int(update), "env_steps": int(env_steps)})
+                metrics["steps_per_state"] = float(env_steps) / max(1, free_count)
+                cov = float(metrics.get("coverage_fraction", float("nan")))
+                metrics["coverage_percent"] = cov * 100.0 if np.isfinite(cov) else float("nan")
+                return metrics
+
+            policy, logs, metrics_log = train_ppo(
+                rep,
+                cfg,
+                device,
+                env_ctor,
+                maze_cfg,
+                policy_obs_fn=policy_obs_fn,
+                policy_input_dim=policy_input_dim,
+                use_extrinsic=use_extrinsic,
+                eval_callback=eval_cb,
+                eval_every_updates=cfg.online_eval_every_updates,
+                eval_buffer=eval_buf,
             )
-            metrics.update({"update": int(update), "env_steps": int(env_steps)})
-            metrics["steps_per_state"] = float(env_steps) / max(1, free_count)
-            cov = float(metrics.get("coverage_fraction", float("nan")))
-            metrics["coverage_percent"] = cov * 100.0 if np.isfinite(cov) else float("nan")
-            return metrics
+            policies[run_name] = policy
+            torch.save(policy.state_dict(), os.path.join(model_dir, f"ppo_{run_name}.pt"))
 
-        policy, logs, metrics_log = train_ppo(
-            rep,
-            cfg,
-            device,
-            env_ctor,
-            maze_cfg,
-            policy_obs_fn=policy_obs_fn,
-            policy_input_dim=policy_input_dim,
-            eval_callback=eval_cb,
-            eval_every_updates=cfg.online_eval_every_updates,
-            eval_buffer=eval_buf,
-        )
-        policies[name] = policy
-        torch.save(policy.state_dict(), os.path.join(model_dir, f"ppo_{name}.pt"))
+            with open(os.path.join(log_dir, f"ppo_logs_{run_name}.csv"), "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=logs[0].keys())
+                writer.writeheader()
+                writer.writerows(logs)
+            _save_timeseries(os.path.join(log_dir, f"metrics_timeseries_{run_name}.csv"), metrics_log)
+            _plot_rep_timeseries(run_name, metrics_log)
 
-        with open(os.path.join(log_dir, f"ppo_logs_{name}.csv"), "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=logs[0].keys())
-            writer.writeheader()
-            writer.writerows(logs)
-        _save_timeseries(os.path.join(log_dir, f"metrics_timeseries_{name}.csv"), metrics_log)
-        coverage_series[name] = metrics_log
-
-        metrics_to_plot = {
-            "rep_invariance_mean": "Rep invariance (mean ||z1 - z2||)",
-            "bonus_within_std_mean": "Bonus within-state std",
-            "bonus_between_std": "Bonus between-state std",
-            "action_kl_mean": "Action KL mean",
-        }
-
-        if name == "crtr_learned":
-            plot_timeseries(
-                metrics_log,
-                title=_with_env_title("CRTR fixed (offline) metrics over training", env_label),
-                out_path=os.path.join(fig_dir, "timeseries_crtr_fixed.png"),
-                metrics=metrics_to_plot,
+            action_vals = action_dist_kl_by_position(
+                policy, rep, cfg, device, env_id, policy_obs_fn=policy_obs_fn
             )
-        elif name == "idm_learned":
-            plot_timeseries(
-                metrics_log,
-                title=_with_env_title("IDM (offline) PPO metrics over training", env_label),
-                out_path=os.path.join(fig_dir, "timeseries_idm.png"),
-                metrics=metrics_to_plot,
-            )
-        elif name == "coord_only":
-            plot_timeseries(
-                metrics_log,
-                title=_with_env_title("Coord-only (xy) PPO metrics over training", env_label),
-                out_path=os.path.join(fig_dir, "timeseries_coord_only.png"),
-                metrics=metrics_to_plot,
-            )
-        elif name == "coord_plus_nuisance":
-            plot_timeseries(
-                metrics_log,
-                title=_with_env_title("Coord + nuisance (xy + phase) PPO metrics over training", env_label),
-                out_path=os.path.join(fig_dir, "timeseries_coord_plus_nuisance.png"),
-                metrics=metrics_to_plot,
-            )
+            if use_extrinsic:
+                coverage_series_goal[run_name] = metrics_log
+                action_kl_goal[run_name] = action_vals
+            else:
+                coverage_series[run_name] = metrics_log
+                action_kl[run_name] = action_vals
 
-        action_kl[name] = action_dist_kl_by_position(
-            policy, rep, cfg, device, env_id, policy_obs_fn=policy_obs_fn
-        )
-
-    plot_multi_timeseries(
+    _plot_ppo_summary(
         coverage_series,
-        title=_with_env_title("PPO coverage over time (full state coverage)", env_label),
-        out_path=os.path.join(fig_dir, "ppo_coverage_over_time.png"),
-        y_key="coverage_percent",
-        y_label="Coverage (%)",
-        x_key="steps_per_state",
-        x_label="Steps per free state",
-        hline_y=100.0,
-    )
-
-    coverage_threshold = float(getattr(cfg, "coverage_threshold", 0.99))
-    coverage_steps = {}
-    coverage_steps_per_state = {}
-    for name, log in coverage_series.items():
-        steps, steps_per_state = _coverage_time(log, coverage_threshold)
-        coverage_steps[name] = steps
-        coverage_steps_per_state[name] = steps_per_state
-    _save_kv(os.path.join(table_dir, "ppo_coverage_time_steps.csv"), coverage_steps)
-    _save_kv(
-        os.path.join(table_dir, "ppo_coverage_time_steps_per_state.csv"), coverage_steps_per_state
-    )
-    coverage_ratios = _pairwise_ratios(coverage_steps_per_state)
-    _save_kv(os.path.join(table_dir, "ppo_coverage_time_ratios.csv"), coverage_ratios)
-    plot_bar_values(
-        coverage_ratios,
-        title=_with_env_title("PPO coverage time ratios (steps per state)", env_label),
-        ylabel="Steps-per-state ratio",
-        out_path=os.path.join(fig_dir, "ppo_coverage_time_ratios.png"),
-    )
-
-    action_kl_p = pairwise_ttests(action_kl)
-    plot_bar(
         action_kl,
-        title=_with_env_title("State-conditioned action distribution change across nuisance", env_label),
-        ylabel="Mean symmetric KL across nuisance",
-        out_path=os.path.join(fig_dir, "ppo_action_kl_by_rep.png"),
-        p_values=action_kl_p,
+        coverage_plot="ppo_coverage_over_time",
+        coverage_time_steps="ppo_coverage_time_steps",
+        coverage_time_steps_per_state="ppo_coverage_time_steps_per_state",
+        coverage_time_ratios="ppo_coverage_time_ratios",
+        action_kl_plot="ppo_action_kl_by_rep",
+        action_kl_values="ppo_action_kl_values",
+        action_kl_pvalues="ppo_action_kl_pvalues",
+        compare_suffix="",
+        title_suffix="",
+        coverage_title="PPO coverage over time (full state coverage)",
+        coverage_ratio_title="PPO coverage time ratios (steps per state)",
+        action_kl_title="State-conditioned action distribution change across nuisance",
     )
-    _save_metric_values(os.path.join(table_dir, "ppo_action_kl_values.csv"), action_kl)
-    _save_kv(os.path.join(table_dir, "ppo_action_kl_pvalues.csv"), action_kl_p)
+    _plot_ppo_summary(
+        coverage_series_goal,
+        action_kl_goal,
+        coverage_plot="ppo_coverage_over_time_goal",
+        coverage_time_steps="ppo_coverage_time_steps_goal",
+        coverage_time_steps_per_state="ppo_coverage_time_steps_per_state_goal",
+        coverage_time_ratios="ppo_coverage_time_ratios_goal",
+        action_kl_plot="ppo_action_kl_by_rep_goal",
+        action_kl_values="ppo_action_kl_values_goal",
+        action_kl_pvalues="ppo_action_kl_pvalues_goal",
+        compare_suffix="_goal",
+        title_suffix=" + goal",
+        coverage_title="PPO coverage over time (full state coverage)",
+        coverage_ratio_title="PPO coverage time ratios (steps per state)",
+        action_kl_title="State-conditioned action distribution change across nuisance",
+    )
 
     print("Stage 4: Online joint representations + bonus + PPO")
     online_rep = init_online_crtr(cfg, device)
@@ -541,6 +627,7 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         maze_cfg,
         policy_obs_fn=policy_obs_fn,
         policy_input_dim=policy_input_dim,
+        use_extrinsic=False,
         rep_updater=online_rep.update,
         rep_buffer=rep_buf,
         rep_update_every=cfg.online_rep_update_every,
@@ -561,18 +648,60 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
     _save_timeseries(os.path.join(log_dir, "metrics_timeseries_crtr_online_joint.csv"), metrics_log)
 
     coverage_series["crtr_online_joint"] = metrics_log
+    _plot_rep_timeseries("crtr_online_joint", metrics_log)
 
-    plot_timeseries(
-        metrics_log,
-        title=_with_env_title("CRTR online (joint) metrics over training", env_label),
-        out_path=os.path.join(fig_dir, "timeseries_crtr_online.png"),
-        metrics={
-            "rep_invariance_mean": "Rep invariance (mean ||z1 - z2||)",
-            "bonus_within_std_mean": "Bonus within-state std",
-            "bonus_between_std": "Bonus between-state std",
-            "action_kl_mean": "Action KL mean",
-        },
+    online_rep_goal = init_online_crtr(cfg, device)
+    rep_buf_goal = OnlineReplayBuffer(cfg.obs_dim, rep_buf_size, cfg.ppo_num_envs, device)
+
+    def online_goal_eval_cb(update, env_steps, model, rep=online_rep_goal, eval_buf=rep_buf_goal):
+        metrics = _eval_levels(
+            rep, model, cfg, device, eval_buf, env_id, policy_obs_fn=policy_obs_fn
+        )
+        metrics.update({"update": int(update), "env_steps": int(env_steps)})
+        metrics["steps_per_state"] = float(env_steps) / max(1, free_count)
+        cov = float(metrics.get("coverage_fraction", float("nan")))
+        metrics["coverage_percent"] = cov * 100.0 if np.isfinite(cov) else float("nan")
+        return metrics
+
+    online_policy_goal, online_logs_goal, metrics_log_goal = train_ppo(
+        online_rep_goal,
+        cfg,
+        device,
+        env_ctor,
+        maze_cfg,
+        policy_obs_fn=policy_obs_fn,
+        policy_input_dim=policy_input_dim,
+        use_extrinsic=True,
+        rep_updater=online_rep_goal.update,
+        rep_buffer=rep_buf_goal,
+        rep_update_every=cfg.online_rep_update_every,
+        rep_update_steps=cfg.online_rep_update_steps,
+        rep_batch_size=cfg.online_rep_batch_size,
+        rep_warmup_steps=cfg.online_rep_warmup_steps,
+        eval_callback=online_goal_eval_cb,
+        eval_every_updates=cfg.online_eval_every_updates,
+        eval_buffer=rep_buf_goal,
     )
+    policies["crtr_online_joint_goal"] = online_policy_goal
+    torch.save(
+        online_policy_goal.state_dict(), os.path.join(model_dir, "ppo_crtr_online_joint_goal.pt")
+    )
+
+    with open(
+        os.path.join(log_dir, "ppo_logs_crtr_online_joint_goal.csv"),
+        "w",
+        newline="",
+        encoding="utf-8",
+    ) as f:
+        writer = csv.DictWriter(f, fieldnames=online_logs_goal[0].keys())
+        writer.writeheader()
+        writer.writerows(online_logs_goal)
+    _save_timeseries(
+        os.path.join(log_dir, "metrics_timeseries_crtr_online_joint_goal.csv"), metrics_log_goal
+    )
+
+    coverage_series_goal["crtr_online_joint_goal"] = metrics_log_goal
+    _plot_rep_timeseries("crtr_online_joint_goal", metrics_log_goal)
 
     online_idm = init_online_idm(cfg, device)
     idm_buf = OnlineReplayBuffer(cfg.obs_dim, rep_buf_size, cfg.ppo_num_envs, device)
@@ -595,6 +724,7 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         maze_cfg,
         policy_obs_fn=policy_obs_fn,
         policy_input_dim=policy_input_dim,
+        use_extrinsic=False,
         rep_updater=online_idm.update,
         rep_buffer=idm_buf,
         rep_update_every=cfg.online_rep_update_every,
@@ -615,70 +745,118 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
     _save_timeseries(os.path.join(log_dir, "metrics_timeseries_idm_online_joint.csv"), idm_metrics_log)
 
     coverage_series["idm_online_joint"] = idm_metrics_log
-    plot_multi_timeseries(
-        coverage_series,
-        title=_with_env_title("PPO coverage over time (incl. online CRTR/IDM)", env_label),
-        out_path=os.path.join(fig_dir, "ppo_coverage_over_time_with_online.png"),
-        y_key="coverage_percent",
-        y_label="Coverage (%)",
-        x_key="steps_per_state",
-        x_label="Steps per free state",
-        hline_y=100.0,
-    )
+    _plot_rep_timeseries("idm_online_joint", idm_metrics_log)
 
-    coverage_steps = {}
-    coverage_steps_per_state = {}
-    for name, log in coverage_series.items():
-        steps, steps_per_state = _coverage_time(log, coverage_threshold)
-        coverage_steps[name] = steps
-        coverage_steps_per_state[name] = steps_per_state
-    _save_kv(
-        os.path.join(table_dir, "ppo_coverage_time_steps_with_online.csv"), coverage_steps
-    )
-    _save_kv(
-        os.path.join(table_dir, "ppo_coverage_time_steps_per_state_with_online.csv"),
-        coverage_steps_per_state,
-    )
-    coverage_ratios = _pairwise_ratios(coverage_steps_per_state)
-    _save_kv(
-        os.path.join(table_dir, "ppo_coverage_time_ratios_with_online.csv"), coverage_ratios
-    )
-    plot_bar_values(
-        coverage_ratios,
-        title=_with_env_title("PPO coverage time ratios (incl. online)", env_label),
-        ylabel="Steps-per-state ratio",
-        out_path=os.path.join(fig_dir, "ppo_coverage_time_ratios_with_online.png"),
-    )
+    online_idm_goal = init_online_idm(cfg, device)
+    idm_buf_goal = OnlineReplayBuffer(cfg.obs_dim, rep_buf_size, cfg.ppo_num_envs, device)
 
-    metrics_series = dict(coverage_series)
-    compare_metrics = {
-        "rep_invariance_mean": "Rep invariance (mean ||z1 - z2||)",
-        "bonus_within_std_mean": "Bonus within-state std",
-        "bonus_between_std": "Bonus between-state std",
-        "bonus_within_over_between": "Bonus within/between ratio",
-        "action_kl_mean": "Action KL mean",
-    }
-    for key, label in compare_metrics.items():
-        plot_multi_timeseries(
-            metrics_series,
-            title=_with_env_title(f"PPO {label} over time (all reps)", env_label),
-            out_path=os.path.join(fig_dir, f"timeseries_compare_{key}.png"),
-            y_key=key,
-            y_label=label,
-            x_key="env_steps",
-            hline_y=None,
+    def online_idm_goal_eval_cb(update, env_steps, model, rep=online_idm_goal, eval_buf=idm_buf_goal):
+        metrics = _eval_levels(
+            rep, model, cfg, device, eval_buf, env_id, policy_obs_fn=policy_obs_fn
         )
+        metrics.update({"update": int(update), "env_steps": int(env_steps)})
+        metrics["steps_per_state"] = float(env_steps) / max(1, free_count)
+        cov = float(metrics.get("coverage_fraction", float("nan")))
+        metrics["coverage_percent"] = cov * 100.0 if np.isfinite(cov) else float("nan")
+        return metrics
 
-    plot_timeseries(
-        idm_metrics_log,
-        title=_with_env_title("IDM online (joint) metrics over training", env_label),
-        out_path=os.path.join(fig_dir, "timeseries_idm_online.png"),
-        metrics={
-            "rep_invariance_mean": "Rep invariance (mean ||z1 - z2||)",
-            "bonus_within_std_mean": "Bonus within-state std",
-            "bonus_between_std": "Bonus between-state std",
-            "action_kl_mean": "Action KL mean",
-        },
+    idm_policy_goal, idm_logs_goal, idm_metrics_log_goal = train_ppo(
+        online_idm_goal,
+        cfg,
+        device,
+        env_ctor,
+        maze_cfg,
+        policy_obs_fn=policy_obs_fn,
+        policy_input_dim=policy_input_dim,
+        use_extrinsic=True,
+        rep_updater=online_idm_goal.update,
+        rep_buffer=idm_buf_goal,
+        rep_update_every=cfg.online_rep_update_every,
+        rep_update_steps=cfg.online_rep_update_steps,
+        rep_batch_size=cfg.online_rep_batch_size,
+        rep_warmup_steps=cfg.online_rep_warmup_steps,
+        eval_callback=online_idm_goal_eval_cb,
+        eval_every_updates=cfg.online_eval_every_updates,
+        eval_buffer=idm_buf_goal,
+    )
+    policies["idm_online_joint_goal"] = idm_policy_goal
+    torch.save(
+        idm_policy_goal.state_dict(), os.path.join(model_dir, "ppo_idm_online_joint_goal.pt")
+    )
+
+    with open(
+        os.path.join(log_dir, "ppo_logs_idm_online_joint_goal.csv"),
+        "w",
+        newline="",
+        encoding="utf-8",
+    ) as f:
+        writer = csv.DictWriter(f, fieldnames=idm_logs_goal[0].keys())
+        writer.writeheader()
+        writer.writerows(idm_logs_goal)
+    _save_timeseries(
+        os.path.join(log_dir, "metrics_timeseries_idm_online_joint_goal.csv"),
+        idm_metrics_log_goal,
+    )
+
+    coverage_series_goal["idm_online_joint_goal"] = idm_metrics_log_goal
+    _plot_rep_timeseries("idm_online_joint_goal", idm_metrics_log_goal)
+
+    action_kl_with_online = dict(action_kl)
+    action_kl_with_online["crtr_online_joint"] = action_dist_kl_by_position(
+        online_policy, online_rep, cfg, device, env_id, policy_obs_fn=policy_obs_fn
+    )
+    action_kl_with_online["idm_online_joint"] = action_dist_kl_by_position(
+        idm_policy, online_idm, cfg, device, env_id, policy_obs_fn=policy_obs_fn
+    )
+    action_kl_with_online_goal = dict(action_kl_goal)
+    action_kl_with_online_goal["crtr_online_joint_goal"] = action_dist_kl_by_position(
+        online_policy_goal,
+        online_rep_goal,
+        cfg,
+        device,
+        env_id,
+        policy_obs_fn=policy_obs_fn,
+    )
+    action_kl_with_online_goal["idm_online_joint_goal"] = action_dist_kl_by_position(
+        idm_policy_goal,
+        online_idm_goal,
+        cfg,
+        device,
+        env_id,
+        policy_obs_fn=policy_obs_fn,
+    )
+
+    _plot_ppo_summary(
+        coverage_series,
+        action_kl_with_online,
+        coverage_plot="ppo_coverage_over_time_with_online",
+        coverage_time_steps="ppo_coverage_time_steps_with_online",
+        coverage_time_steps_per_state="ppo_coverage_time_steps_per_state_with_online",
+        coverage_time_ratios="ppo_coverage_time_ratios_with_online",
+        action_kl_plot="ppo_action_kl_with_online",
+        action_kl_values="ppo_action_kl_values_with_online",
+        action_kl_pvalues="ppo_action_kl_pvalues_with_online",
+        compare_suffix="",
+        title_suffix="",
+        coverage_title="PPO coverage over time (incl. online CRTR/IDM)",
+        coverage_ratio_title="PPO coverage time ratios (incl. online)",
+        action_kl_title="Action KL across nuisance (incl. online joint)",
+    )
+    _plot_ppo_summary(
+        coverage_series_goal,
+        action_kl_with_online_goal,
+        coverage_plot="ppo_coverage_over_time_with_online_goal",
+        coverage_time_steps="ppo_coverage_time_steps_with_online_goal",
+        coverage_time_steps_per_state="ppo_coverage_time_steps_per_state_with_online_goal",
+        coverage_time_ratios="ppo_coverage_time_ratios_with_online_goal",
+        action_kl_plot="ppo_action_kl_with_online_goal",
+        action_kl_values="ppo_action_kl_values_with_online_goal",
+        action_kl_pvalues="ppo_action_kl_pvalues_with_online_goal",
+        compare_suffix="_goal",
+        title_suffix=" + goal",
+        coverage_title="PPO coverage over time (incl. online CRTR/IDM)",
+        coverage_ratio_title="PPO coverage time ratios (incl. online)",
+        action_kl_title="Action KL across nuisance (incl. online joint)",
     )
 
     # Final metrics including online joint representation
@@ -771,25 +949,6 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
     _save_kv(os.path.join(table_dir, "bonus_std_pvalues_with_online.csv"), bonus_std_p_all)
     _save_kv(os.path.join(table_dir, "bonus_ratio_pvalues_with_online.csv"), bonus_ratio_p_all)
 
-    action_kl_all = dict(action_kl)
-    action_kl_all["crtr_online_joint"] = action_dist_kl_by_position(
-        online_policy, online_rep, cfg, device, env_id, policy_obs_fn=policy_obs_fn
-    )
-    action_kl_all["idm_online_joint"] = action_dist_kl_by_position(
-        idm_policy, online_idm, cfg, device, env_id, policy_obs_fn=policy_obs_fn
-    )
-    action_kl_p_all = pairwise_ttests(action_kl_all)
-    plot_bar(
-        action_kl_all,
-        title=_with_env_title("Action KL across nuisance (incl. online joint)", env_label),
-        ylabel="Mean symmetric KL across nuisance",
-        out_path=os.path.join(fig_dir, "ppo_action_kl_with_online.png"),
-        p_values=action_kl_p_all,
-    )
-    _save_metric_values(
-        os.path.join(table_dir, "ppo_action_kl_values_with_online.csv"), action_kl_all
-    )
-    _save_kv(os.path.join(table_dir, "ppo_action_kl_pvalues_with_online.csv"), action_kl_p_all)
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--fast", action="store_true", help="Use smaller settings for quick runs.")
