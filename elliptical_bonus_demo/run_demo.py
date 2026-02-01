@@ -83,6 +83,34 @@ def render_heatmap(
     plt.close(fig)
 
 
+def render_state_timeseries(
+    heatmaps: List[np.ndarray],
+    pos_trace: List[Tuple[int, int]],
+    grid_size: int,
+    out_path: str,
+) -> None:
+    t_steps = np.arange(len(heatmaps))
+    heat_arr = np.stack(heatmaps, axis=0)
+    fig, ax = plt.subplots(figsize=(6, 4))
+    for r in range(grid_size):
+        for c in range(grid_size):
+            y = heat_arr[:, r, c]
+            label = f"({r},{c})"
+            ax.plot(t_steps, y, label=label)
+
+    for t, (r, c) in enumerate(pos_trace):
+        ax.scatter([t], [heat_arr[t, r, c]], c="black", s=30, marker="o", zorder=3)
+
+    ax.set_title("Elliptical bonus per state over time")
+    ax.set_xlabel("t")
+    ax.set_ylabel("bonus")
+    ax.grid(alpha=0.3)
+    ax.legend(title="state", ncols=2, fontsize=8)
+    fig.tight_layout()
+    fig.savefig(out_path)
+    plt.close(fig)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--steps", type=int, default=30)
@@ -95,6 +123,11 @@ def main() -> None:
         "--no-avg-actions",
         action="store_true",
         help="Disable action-averaging when computing heatmaps.",
+    )
+    parser.add_argument(
+        "--print-values",
+        action="store_true",
+        help="Print raw heatmap values at each timestep.",
     )
     parser.add_argument("--out-dir", type=str, default="elliptical_bonus_demo/outputs")
     parser.add_argument("--fps", type=int, default=4)
@@ -137,6 +170,10 @@ def main() -> None:
         )
         heatmaps.append(heat.detach().cpu().numpy())
         pos_trace.append(pos)
+        if args.print_values:
+            heat_np = heat.detach().cpu().numpy()
+            print(f"\n[t={t}] bonus heatmap:")
+            print(np.array2string(heat_np, precision=6, suppress_small=False))
 
         action = int(rng.integers(0, args.n_actions))
         state_idx = pos[0] * args.grid_size + pos[1]
@@ -160,6 +197,13 @@ def main() -> None:
             out_path=out_path,
         )
         frame_paths.append(out_path)
+
+    render_state_timeseries(
+        heatmaps,
+        pos_trace,
+        args.grid_size,
+        out_path=os.path.join(args.out_dir, "state_bonus_timeseries.png"),
+    )
 
     images = [imageio.imread(p) for p in frame_paths]
     gif_path = os.path.join(args.out_dir, "bonus_evolution.gif")
