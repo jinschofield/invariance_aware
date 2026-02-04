@@ -37,22 +37,39 @@ python -m periodicity_study.run_study --envs periodicity_large
 python -m periodicity_study.run_study --envs periodicity,slippery
 ```
 
-### Selecting reps and reward mode (PPO only)
-You can run a subset of representation PPO runs and choose reward mode:
+### Selecting reward mode (PPO only)
+All PPO figures include all reps by default. You can still choose reward mode:
 
 ```bash
-# Only goal (extrinsic) PPO for learned reps
-python -m periodicity_study.run_study --goal-only --reps crtr_learned,idm_learned,crtr_online_joint,idm_online_joint
+# Only goal (extrinsic) PPO
+python -m periodicity_study.run_study --goal-only
 
 # Only intrinsic PPO runs
 python -m periodicity_study.run_study --intrinsic-only
 ```
 
-### PPO policy input
-By default PPO consumes representation embeddings. To use raw observations instead:
+### PPO policy inputs
+By default PPO runs twice (representation embeddings + raw observations). To restrict:
 
 ```bash
-python -m periodicity_study.run_study --policy-input raw
+python -m periodicity_study.run_study --policy-inputs raw
+```
+
+### Intrinsic mixing toggles
+All intrinsic mixing optimizations are off by default. Enable as needed:
+
+```bash
+# Success-conditioned alpha annealing
+python -m periodicity_study.run_study --use-alpha-anneal
+
+# Episode-gated intrinsic after first extrinsic hit
+python -m periodicity_study.run_study --use-alpha-gate
+
+# Separate ext/int critics (disallowed for extrinsic runs by default)
+python -m periodicity_study.run_study --use-two-critic
+
+# Normalize (and optionally clip) intrinsic reward
+python -m periodicity_study.run_study --use-int-norm --int-clip 5.0
 ```
 
 This study is GPU-first and will error if CUDA is not available. Use `--device cuda:0`
@@ -76,5 +93,5 @@ Outputs (figures + CSVs) are written under:
 
 During PPO training, metrics for levels (1), (2), and (3) are logged over time:
 
-- `periodicity_study/outputs/logs/metrics_timeseries_<rep>.csv`
-- `periodicity_study/outputs/logs/metrics_timeseries_crtr_online_joint.csv`
+- `periodicity_study/outputs/logs/metrics_timeseries_<rep>_<policy>.csv`
+- `periodicity_study/outputs/logs/metrics_timeseries_crtr_online_joint_<policy>.csv`

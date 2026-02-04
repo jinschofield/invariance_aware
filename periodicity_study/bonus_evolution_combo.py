@@ -177,12 +177,15 @@ def main() -> None:
     def eval_cb(update, env_steps, model):
         if eval_buf.size >= int(cfg.online_eval_min_buffer):
             h_mean, _ = build_bonus_heatmaps(rep, eval_buf, cfg, device, env_id)
+            h_mean_cpu = h_mean.detach().cpu()
             if heatmaps:
-                diff = torch.nan_to_num(h_mean - heatmaps[-1], nan=0.0).abs().max().item()
+                diff = (
+                    torch.nan_to_num(h_mean_cpu - heatmaps[-1], nan=0.0).abs().max().item()
+                )
                 if diff < float(args.diff_threshold):
                     return {}
             if len(heatmaps) < int(args.max_frames):
-                heatmaps.append(h_mean.detach().cpu())
+                heatmaps.append(h_mean_cpu)
                 heat_steps.append(int(env_steps))
                 heat_updates.append(int(update))
         return {}
