@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.distributions import Categorical
@@ -167,6 +168,18 @@ def train_ppo(
     int_clip = float(getattr(cfg, "ppo_int_clip", 0.0))
     int_eps = float(getattr(cfg, "ppo_int_norm_eps", 1e-8))
     alpha0 = float(getattr(cfg, "ppo_alpha0", 1.0))
+    if bool(getattr(cfg, "ppo_alpha0_auto", False)):
+        c = float(getattr(cfg, "ppo_alpha0_c", 1.0))
+        horizon = int(getattr(cfg, "ppo_alpha0_horizon", 0))
+        if horizon <= 0:
+            horizon = int(maze_cfg["max_ep_steps"])
+        d = int(rep.dim) + int(cfg.n_actions)
+        lam = float(getattr(cfg, "bonus_lambda", 1.0))
+        denom = 2.0 * horizon * d * np.log(1.0 + horizon / max(lam * d, 1e-8))
+        if denom > 0.0:
+            target = float(c) / float(np.sqrt(denom))
+            beta = float(getattr(cfg, "bonus_beta", 1.0))
+            alpha0 = target / max(beta, 1e-8)
     alpha_eta = float(getattr(cfg, "ppo_alpha_eta", 1.0))
     alpha_rho = float(getattr(cfg, "ppo_alpha_rho", 0.05))
     alpha_zero_after_hit = use_alpha_gate

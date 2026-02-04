@@ -73,6 +73,9 @@ class StudyConfig:
     ppo_vf_coef: float = 0.5
     ppo_max_grad_norm: float = 0.5
     ppo_alpha0: float = 1.0
+    ppo_alpha0_auto: bool = False
+    ppo_alpha0_c: float = 1.0
+    ppo_alpha0_horizon: int = 0
     ppo_alpha_eta: float = 1.0
     ppo_alpha_rho: float = 0.05
     ppo_alpha_zero_after_hit: bool = False

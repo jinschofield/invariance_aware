@@ -1,6 +1,8 @@
 from typing import Dict, Iterable, Optional, Tuple
 
+import itertools
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as patheffects
 import numpy as np
 import torch
 
@@ -16,6 +18,26 @@ def _format_x_ticks(ax: plt.Axes, rotation: int = 30) -> None:
     ax.tick_params(axis="x", labelrotation=rotation)
     for label in ax.get_xticklabels():
         label.set_ha("right")
+
+
+def _line_style_cycle() -> Iterable[dict]:
+    colors = plt.rcParams["axes.prop_cycle"].by_key().get(
+        "color", ["C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9"]
+    )
+    color_cycle = itertools.cycle(colors)
+    linestyle_cycle = itertools.cycle(["-", "--", "-.", ":"])
+    marker_cycle = itertools.cycle(["o", "s", "D", "^", "v", "P", "X", "*", "<", ">"])
+    while True:
+        yield {
+            "color": next(color_cycle),
+            "linestyle": next(linestyle_cycle),
+            "marker": next(marker_cycle),
+            "markersize": 4,
+            "linewidth": 2.0,
+            "alpha": 0.9,
+            "markeredgecolor": "black",
+            "markeredgewidth": 0.4,
+        }
 
 
 def plot_bar(
@@ -156,8 +178,12 @@ def plot_timeseries(
     # Hide any unused axes
     for ax in axes[n:]:
         ax.axis("off")
-    for ax in axes:
-        ax.label_outer()
+    # Keep y-axis labels on all subplots; hide x labels on non-bottom rows.
+    for idx, ax in enumerate(axes[:n]):
+        row = idx // ncols
+        if row < nrows - 1:
+            ax.tick_params(axis="x", labelbottom=False)
+            ax.set_xlabel("")
 
     fig.suptitle(title)
     fig.tight_layout()
@@ -177,13 +203,21 @@ def plot_multi_timeseries(
     xscale: Optional[str] = None,
 ):
     fig, ax = plt.subplots(figsize=(7, 4))
+    style_iter = _line_style_cycle()
     for name, rows in series_by_rep.items():
         rows = list(rows)
         if not rows:
             continue
         x = [float(row.get(x_key, row.get("update", 0))) for row in rows]
         y = [float(row.get(y_key, float("nan"))) for row in rows]
-        ax.plot(x, y, marker="o", markersize=3, label=name)
+        style = next(style_iter)
+        (line,) = ax.plot(x, y, label=name, **style)
+        line.set_path_effects(
+            [
+                patheffects.Stroke(linewidth=style["linewidth"] + 2.0, foreground="white"),
+                patheffects.Normal(),
+            ]
+        )
     ax.set_title(title)
     ax.set_xlabel(x_label or x_key)
     ax.set_ylabel(y_label)

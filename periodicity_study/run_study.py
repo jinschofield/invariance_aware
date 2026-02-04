@@ -362,6 +362,15 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         "action_kl_mean": "Action KL mean",
     }
 
+    def _order_rep_dict(data: dict, order: Optional[list[str]]) -> dict:
+        if not data or not order:
+            return data
+        ordered = {k: data[k] for k in order if k in data}
+        for k, v in data.items():
+            if k not in ordered:
+                ordered[k] = v
+        return ordered
+
     def _plot_ppo_summary(
         coverage_data: dict,
         action_kl_data: dict,
@@ -380,7 +389,10 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
         success_plot: Optional[str] = None,
         success_time_plot: Optional[str] = None,
         success_values: Optional[str] = None,
+        rep_order: Optional[list[str]] = None,
     ) -> None:
+        coverage_data = _order_rep_dict(coverage_data, rep_order)
+        action_kl_data = _order_rep_dict(action_kl_data, rep_order)
         if not coverage_data:
             return
         plot_multi_timeseries(
@@ -836,6 +848,16 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
             policy_obs_fn=policy_obs_fn,
         )
 
+        rep_order = [
+            "coord_only",
+            "coord_plus_nuisance",
+            "crtr_learned",
+            "idm_learned",
+            "crtr_online_joint",
+            "idm_online_joint",
+        ]
+        rep_order_goal = [f"{name}_goal" for name in rep_order]
+
         _plot_ppo_summary(
             coverage_series,
             action_kl_with_online,
@@ -851,6 +873,7 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
             coverage_title="PPO coverage over time (incl. online CRTR/IDM)",
             coverage_ratio_title="PPO coverage time ratios (incl. online)",
             action_kl_title="Action KL across nuisance (incl. online joint)",
+            rep_order=rep_order,
         )
         _plot_ppo_summary(
             coverage_series_goal,
@@ -872,6 +895,7 @@ def _run_env(cfg, env_spec, device: torch.device, args) -> None:
             success_plot=f"ppo_success_rate_by_rep_with_online_goal{policy_suffix}",
             success_time_plot=f"ppo_success_rate_over_time_with_online_goal{policy_suffix}",
             success_values=f"ppo_success_rate_values_with_online_goal{policy_suffix}",
+            rep_order=rep_order_goal,
         )
 
         rep_metrics_all = dict(rep_metrics)
@@ -1046,6 +1070,23 @@ def main():
     parser.add_argument("--use-two-critic", action="store_true", help="Enable separate ext/int critics.")
     parser.add_argument("--use-int-norm", action="store_true", help="Normalize intrinsic reward by running std.")
     parser.add_argument("--int-clip", type=float, default=0.0, help="Clip normalized intrinsic reward.")
+    parser.add_argument(
+        "--alpha0-auto",
+        action="store_true",
+        help="Auto-set alpha0 so alpha0*beta matches corollary scale.",
+    )
+    parser.add_argument(
+        "--alpha0-c",
+        type=float,
+        default=None,
+        help="Scale constant c for alpha0 auto rule (default: 1.0).",
+    )
+    parser.add_argument(
+        "--alpha0-horizon",
+        type=int,
+        default=0,
+        help="Horizon T for alpha0 auto rule (default: max_ep_steps).",
+    )
     args = parser.parse_args()
 
     base_cfg = StudyConfig()
@@ -1060,6 +1101,11 @@ def main():
     base_cfg.ppo_use_two_critic = bool(args.use_two_critic)
     base_cfg.ppo_use_int_norm = bool(args.use_int_norm)
     base_cfg.ppo_int_clip = float(args.int_clip)
+    base_cfg.ppo_alpha0_auto = bool(args.alpha0_auto)
+    if args.alpha0_c is not None:
+        base_cfg.ppo_alpha0_c = float(args.alpha0_c)
+    if int(args.alpha0_horizon) > 0:
+        base_cfg.ppo_alpha0_horizon = int(args.alpha0_horizon)
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
     repo_root = os.path.dirname(base_dir)
