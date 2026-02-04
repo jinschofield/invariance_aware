@@ -179,8 +179,11 @@ def main() -> None:
             h_mean, _ = build_bonus_heatmaps(rep, eval_buf, cfg, device, env_id)
             h_mean_cpu = h_mean.detach().cpu()
             if heatmaps:
+                prev_heat = heatmaps[-1]
+                if prev_heat.device != h_mean_cpu.device:
+                    prev_heat = prev_heat.detach().cpu()
                 diff = (
-                    torch.nan_to_num(h_mean_cpu - heatmaps[-1], nan=0.0).abs().max().item()
+                    torch.nan_to_num(h_mean_cpu - prev_heat, nan=0.0).abs().max().item()
                 )
                 if diff < float(args.diff_threshold):
                     return {}
